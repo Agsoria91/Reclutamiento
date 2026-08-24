@@ -167,6 +167,19 @@
   .month-pill.active{background:var(--brand-green);border-color:var(--brand-green);color:#fff;}
   .month-pill .n{opacity:.75;font-weight:500;margin-left:3px;}
 
+  /* ---------- dimension filters (select-based) ---------- */
+  .dim-filters{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:18px;}
+  .dim-filter-group{display:flex;flex-direction:column;gap:4px;}
+  .dim-filter-group label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);font-weight:700;}
+  .dim-filter-group select{
+    border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);
+    font-size:12.5px;font-weight:600;padding:7px 10px;border-radius:8px;min-width:180px;cursor:pointer;
+    appearance:auto;
+  }
+  .dim-filter-group select:hover{border-color:var(--brand-green);}
+  .dim-filter-group select:focus{outline:2px solid var(--brand-green);outline-offset:1px;}
+  .dim-filters-empty{font-size:12.5px;color:var(--text-muted);padding:14px 0;}
+
   /* ---------- puesto table ---------- */
   .puesto-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
   .puesto-table thead th{
@@ -337,7 +350,7 @@
 
   <!-- ================= PLAN DE COBERTURA — OBJETIVO MENSUAL ================= -->
   <h2 class="section-title"><span class="dot"></span>Plan de cobertura — objetivo mensual y ventana de sourcing</h2>
-  <p class="section-sub">Sin fecha de puesta en marcha confirmada, tomamos la necesidad mensual de la matriz PP como objetivo de cobertura. La fecha límite de arranque de sourcing surge de restar 90 días corridos al inicio de cada mes — duración real observada en los procesos ya finalizados de la planilla de Gerencia de Producción (mediana 97 días, mínimo 37, sobre 16 casos cerrados).</p>
+  <p class="section-sub">La fecha límite de arranque de sourcing surge de restar 90 días corridos al inicio de cada mes.</p>
   <div class="card">
     <table class="puesto-table" id="planTable">
       <thead>
@@ -482,55 +495,23 @@
 
   <!-- ================= FUNNEL ================= -->
   <h2 class="section-title"><span class="dot"></span>Avance del proceso — embudo de selección</h2>
-  <p class="section-sub">Candidatos que completaron cada etapa (según fecha registrada), sobre el total de 78 candidatos del pipeline. Incluye las dos etapas nuevas de la planilla: "Enviado a Línea" y "OK de RRLL".</p>
+  <p class="section-sub" id="funnelSub">Candidatos que completaron cada etapa (según fecha registrada), sobre el total de 78 candidatos del pipeline. Incluye las dos etapas nuevas de la planilla: "Enviado a Línea" y "OK de RRLL".</p>
   <div class="card">
-    <div class="funnel">
-      <div class="funnel-row">
-        <div class="funnel-name">CV Recibido</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#d7f0e3;"><span style="color:var(--text-primary)">37</span></div></div>
-        <div class="funnel-pct">47%</div>
+    <div class="dim-filters">
+      <div class="dim-filter-group">
+        <label>Servicio</label>
+        <select id="funnelServicio"></select>
       </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Enviado a Línea</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:81%;background:#b7e3cd;"><span style="color:var(--text-primary)">30</span></div></div>
-        <div class="funnel-pct">38%</div>
+      <div class="dim-filter-group">
+        <label>Vacante a considerar</label>
+        <select id="funnelPuesto"></select>
       </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Aprobado para entrevista</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:78%;background:#9ddcc0;"><span style="color:var(--text-primary)">29</span></div></div>
-        <div class="funnel-pct">37%</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Entrevista</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:49%;background:#8fd2b0;"><span style="color:var(--text-primary)">18</span></div></div>
-        <div class="funnel-pct">23%</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">OK de RRLL</div>
-        <div class="funnel-track" style="background:rgba(208,59,59,0.15);"><div class="funnel-fill" style="width:2%;background:var(--status-critical);"><span>0</span></div></div>
-        <div class="funnel-pct" style="color:var(--status-critical);font-weight:700;">0% ⚠️</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Examen Médico</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:38%;background:#5cbd90;"><span>14</span></div></div>
-        <div class="funnel-pct">18%</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Clínica</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:35%;background:#2ba36f;"><span>13</span></div></div>
-        <div class="funnel-pct">17%</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Aptitud</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:27%;background:#008750;"><span>10</span></div></div>
-        <div class="funnel-pct">13%</div>
-      </div>
-      <div class="funnel-row">
-        <div class="funnel-name">Ingreso</div>
-        <div class="funnel-track"><div class="funnel-fill" style="width:16%;background:#045f38;"><span>6</span></div></div>
-        <div class="funnel-pct">8%</div>
+      <div class="dim-filter-group">
+        <label>Procedencia</label>
+        <select id="funnelProcedencia"></select>
       </div>
     </div>
+    <div class="funnel" id="funnelRoot"></div>
     <div class="callout" style="margin-top:16px;">
       <span>🔴</span>
       <div><b>Cuello de botella nuevo:</b> "OK de RRLL" no tiene ni un solo caso cerrado todavía. Cuatro candidatos están esperando ese paso, entre ellos uno (Rios Fernando, TLM) que ya está "Apto" desde el 07/06 — hace más de dos meses — y no puede formalizar su ingreso solo por esto.</div>
@@ -628,44 +609,23 @@
 
   <!-- ================= MOTIVOS DE BAJA ================= -->
   <h2 class="section-title"><span class="dot"></span>Principales motivos de baja</h2>
+  <p class="section-sub" id="motivoSub">Sobre 27 candidatos cancelados de 78 totales.</p>
   <div class="card">
-    <div class="hbar-list">
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">No Califica en Entrevista</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">9</div>
+    <div class="dim-filters">
+      <div class="dim-filter-group">
+        <label>Servicio</label>
+        <select id="motivoServicio"></select>
       </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">No Califica (genérico)</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:89%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">8</div>
+      <div class="dim-filter-group">
+        <label>Vacante a considerar</label>
+        <select id="motivoPuesto"></select>
       </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">CV Rechazado por Línea</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:67%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">6</div>
-      </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">Rechaza Propuesta</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">1</div>
-      </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">No avanza (definido por línea)</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">1</div>
-      </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">No se presentó a examen preocupacional</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">1</div>
-      </div>
-      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
-        <div class="hbar-name">Secundario incompleto</div>
-        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
-        <div class="hbar-val">1</div>
+      <div class="dim-filter-group">
+        <label>Procedencia</label>
+        <select id="motivoProcedencia"></select>
       </div>
     </div>
+    <div class="hbar-list" id="motivoRoot"></div>
   </div>
 
   <footer>
@@ -895,6 +855,149 @@
       <td class="num">${r.avance}</td>
       <td>${r.fecha}${r.estado==='porvencer' ? ` <span class="tag" style="display:inline;color:var(--text-muted);">(${r.dias})</span>` : ''}</td>
     </tr>`).join('');
+
+
+  /* ---------- Embudo y motivos de baja — filtrables por Servicio / Vacante a considerar / Procedencia ---------- */
+  const candidatos = [{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No avanza (definido por línea)","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":false,"s":{"aprobado":1,"entrevista":1,"examen":1,"clinica":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":true,"motivo":"No se presentó a examen preocupacional","s":{}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Trainee","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentación / Mecánica","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"Rechaza Propuesta","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"Secundario incompleto","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1,"examen":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1,"aprobado":1}}];
+
+  const SERVICIO_ORDER = ['Mantenimiento', 'Producción', 'Almacén', 'Planta', 'TLM', 'Serge'];
+  const PROCEDENCIA_ORDER = ['Sindicato', 'Consultora', 'Consultora / Sindicato', 'Postulación', 'Línea'];
+
+  function fillSelect(sel, values, allLabel) {
+    sel.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  function puestosForServicio(servicio) {
+    const pool = servicio ? candidatos.filter(c => c.servicio === servicio) : candidatos;
+    return [...new Set(pool.map(c => c.puesto))].sort((a, b) => a.localeCompare(b, 'es'));
+  }
+
+  /* ----- Embudo ----- */
+  const funnelStages = [
+    { key: 'cv', label: 'CV Recibido', color: '#d7f0e3' },
+    { key: 'enviado', label: 'Enviado a Línea', color: '#b7e3cd' },
+    { key: 'aprobado', label: 'Aprobado para entrevista', color: '#9ddcc0' },
+    { key: 'entrevista', label: 'Entrevista', color: '#8fd2b0' },
+    { key: 'okrrll', label: 'OK de RRLL', color: 'var(--status-critical)', critical: true },
+    { key: 'examen', label: 'Examen Médico', color: '#5cbd90' },
+    { key: 'clinica', label: 'Clínica', color: '#2ba36f' },
+    { key: 'aptitud', label: 'Aptitud', color: '#008750' },
+    { key: 'ingreso', label: 'Ingreso', color: '#045f38' },
+  ];
+
+  const funnelServicioEl = document.getElementById('funnelServicio');
+  const funnelPuestoEl = document.getElementById('funnelPuesto');
+  const funnelProcedenciaEl = document.getElementById('funnelProcedencia');
+  const funnelRootEl = document.getElementById('funnelRoot');
+  const funnelSubEl = document.getElementById('funnelSub');
+
+  fillSelect(funnelServicioEl, SERVICIO_ORDER, 'Todos los servicios');
+  fillSelect(funnelPuestoEl, puestosForServicio(''), 'Todas las vacantes');
+  fillSelect(funnelProcedenciaEl, PROCEDENCIA_ORDER, 'Todas las procedencias');
+
+  function renderFunnel() {
+    const servicio = funnelServicioEl.value;
+    const puesto = funnelPuestoEl.value;
+    const procedencia = funnelProcedenciaEl.value;
+    const filtered = candidatos.filter(c =>
+      (!servicio || c.servicio === servicio) &&
+      (!puesto || c.puesto === puesto) &&
+      (!procedencia || c.procedencia === procedencia)
+    );
+    const total = filtered.length;
+    const baseCount = filtered.filter(c => c.s.cv).length || total || 1;
+
+    funnelSubEl.textContent = total
+      ? `Candidatos que completaron cada etapa (según fecha registrada), sobre ${total} candidato${total === 1 ? '' : 's'} del pipeline${(servicio || puesto || procedencia) ? ' filtrado' : ''}.`
+      : 'Ningún candidato del pipeline coincide con este filtro.';
+
+    if (!total) {
+      funnelRootEl.innerHTML = `<div class="dim-filters-empty">Sin candidatos para esta combinación de filtros.</div>`;
+      return;
+    }
+
+    funnelRootEl.innerHTML = funnelStages.map(st => {
+      const count = filtered.filter(c => c.s[st.key]).length;
+      const widthPct = Math.round((count / baseCount) * 100);
+      const labelPct = Math.round((count / total) * 100);
+      if (st.critical) {
+        return `
+      <div class="funnel-row">
+        <div class="funnel-name">${st.label}</div>
+        <div class="funnel-track" style="background:rgba(208,59,59,0.15);"><div class="funnel-fill" style="width:${Math.max(widthPct, 2)}%;background:${st.color};"><span>${count}</span></div></div>
+        <div class="funnel-pct" style="color:var(--status-critical);font-weight:700;">${labelPct}%${count === 0 ? ' ⚠️' : ''}</div>
+      </div>`;
+      }
+      return `
+      <div class="funnel-row">
+        <div class="funnel-name">${st.label}</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:${widthPct}%;background:${st.color};"><span style="color:var(--text-primary)">${count}</span></div></div>
+        <div class="funnel-pct">${labelPct}%</div>
+      </div>`;
+    }).join('');
+  }
+
+  funnelServicioEl.addEventListener('change', () => {
+    fillSelect(funnelPuestoEl, puestosForServicio(funnelServicioEl.value), 'Todas las vacantes');
+    renderFunnel();
+  });
+  funnelPuestoEl.addEventListener('change', renderFunnel);
+  funnelProcedenciaEl.addEventListener('change', renderFunnel);
+  renderFunnel();
+
+  /* ----- Motivos de baja ----- */
+  const motivoServicioEl = document.getElementById('motivoServicio');
+  const motivoPuestoEl = document.getElementById('motivoPuesto');
+  const motivoProcedenciaEl = document.getElementById('motivoProcedencia');
+  const motivoRootEl = document.getElementById('motivoRoot');
+  const motivoSubEl = document.getElementById('motivoSub');
+
+  fillSelect(motivoServicioEl, SERVICIO_ORDER, 'Todos los servicios');
+  fillSelect(motivoPuestoEl, puestosForServicio(''), 'Todas las vacantes');
+  fillSelect(motivoProcedenciaEl, PROCEDENCIA_ORDER, 'Todas las procedencias');
+
+  function renderMotivos() {
+    const servicio = motivoServicioEl.value;
+    const puesto = motivoPuestoEl.value;
+    const procedencia = motivoProcedenciaEl.value;
+    const filteredAll = candidatos.filter(c =>
+      (!servicio || c.servicio === servicio) &&
+      (!puesto || c.puesto === puesto) &&
+      (!procedencia || c.procedencia === procedencia)
+    );
+    const cancelados = filteredAll.filter(c => c.cancelado);
+
+    motivoSubEl.textContent = `Sobre ${cancelados.length} candidato${cancelados.length === 1 ? '' : 's'} cancelado${cancelados.length === 1 ? '' : 's'} de ${filteredAll.length} totales${(servicio || puesto || procedencia) ? ' en este filtro' : ''}.`;
+
+    if (!cancelados.length) {
+      motivoRootEl.innerHTML = `<div class="dim-filters-empty">Sin cancelados para esta combinación de filtros.</div>`;
+      return;
+    }
+
+    const counts = {};
+    cancelados.forEach(c => {
+      const m = c.motivo || 'Sin motivo registrado';
+      counts[m] = (counts[m] || 0) + 1;
+    });
+    const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const max = rows[0][1];
+
+    motivoRootEl.innerHTML = rows.map(([name, val]) => `
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">${name}</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round((val / max) * 100)}%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">${val}</div>
+      </div>`).join('');
+  }
+
+  motivoServicioEl.addEventListener('change', () => {
+    fillSelect(motivoPuestoEl, puestosForServicio(motivoServicioEl.value), 'Todas las vacantes');
+    renderMotivos();
+  });
+  motivoPuestoEl.addEventListener('change', renderMotivos);
+  motivoProcedenciaEl.addEventListener('change', renderMotivos);
+  renderMotivos();
+
 </script>
 
 </body>
