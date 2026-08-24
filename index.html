@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EFiS · Dashboard de Reclutamiento — Tecpetrol</title>
+<style>
+  :root{
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --surface-2:      #ffffff;
+    --page-plane:     #f4f7f5;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --grid-line:      #e6e5e0;
+    --baseline:       #c3c2b7;
+    --border:         rgba(11,11,11,0.08);
+
+    --brand-green:    #008750;
+    --brand-green-dk: #045f38;
+    --brand-lime:     #78b450;
+    --brand-gray:     #666666;
+
+    --series-mant:    #008750; /* Mantenimiento */
+    --series-alm:     #2a78d6; /* Almacén */
+    --series-tlm:     #eb6834; /* TLM */
+    --series-prod:    #4a3aa7; /* Producción */
+    --series-serge:   #eda100; /* Serge */
+    --series-planta:  #e34948; /* Planta */
+
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-critical:#d03b3b;
+
+    --need-bar:       #c9cdd6;
+    --need-bar-line:  #8b93a3;
+
+    --radius-card: 14px;
+    --shadow-card: 0 1px 2px rgba(11,11,11,0.04), 0 4px 16px rgba(11,11,11,0.05);
+  }
+
+  [data-theme="dark"]{
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --surface-2:      #212220;
+    --page-plane:     #101211;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #8f8d87;
+    --grid-line:      #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255,255,255,0.10);
+
+    --brand-green:    #12a565;
+    --brand-green-dk: #0d7a4c;
+    --brand-lime:     #96c86a;
+
+    --series-mant:    #12a565;
+    --series-alm:     #3987e5;
+    --series-tlm:     #ef8355;
+    --series-prod:    #9085e9;
+    --series-serge:   #eda100;
+    --series-planta:  #e66767;
+
+    --status-good:    #0ca30c;
+    --status-warning: #fab219;
+    --status-critical:#e66767;
+
+    --need-bar:       #33363d;
+    --need-bar-line:  #565c6b;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--page-plane);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 24px 64px;}
+
+  /* ---------- HEADER ---------- */
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:20px;padding:18px 26px;
+    background:var(--surface-2);border:1px solid var(--border);
+    border-radius: var(--radius-card); box-shadow:var(--shadow-card);
+    margin-bottom:22px;
+  }
+  .brand{display:flex;align-items:center;gap:16px;}
+  .brand img{height:46px;display:block;}
+  .brand-text h1{font-size:17px;margin:0 0 2px;font-weight:700;letter-spacing:.2px;}
+  .brand-text p{margin:0;font-size:12.5px;color:var(--text-secondary);}
+  .meta{text-align:right;font-size:12px;color:var(--text-muted);}
+  .meta strong{display:block;color:var(--text-secondary);font-size:12.5px;font-weight:600;}
+  .theme-toggle{
+    margin-left:14px;border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);font-size:12px;padding:7px 12px;border-radius:20px;
+    cursor:pointer;font-weight:600;
+  }
+  .theme-toggle:hover{border-color:var(--brand-green);color:var(--brand-green);}
+
+  h2.section-title{
+    font-size:14px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--text-secondary);font-weight:700;margin:38px 0 4px;
+    display:flex;align-items:center;gap:8px;
+  }
+  h2.section-title .dot{width:8px;height:8px;border-radius:50%;background:var(--brand-green);display:inline-block;}
+  p.section-sub{margin:0 0 16px;font-size:12.5px;color:var(--text-muted);max-width:760px;}
+
+  .card{
+    background:var(--surface-2);border:1px solid var(--border);
+    border-radius:var(--radius-card);box-shadow:var(--shadow-card);
+    padding:20px 22px;
+  }
+
+  /* ---------- KPI ROW ---------- */
+  .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+  .kpi{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-card);
+    box-shadow:var(--shadow-card);padding:16px 16px 14px;position:relative;overflow:hidden;
+  }
+  .kpi::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--brand-green));
+  }
+  .kpi .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+  .kpi .value{font-size:28px;font-weight:700;margin:6px 0 2px;font-variant-numeric:proportional-nums;}
+  .kpi .sub{font-size:11.5px;color:var(--text-secondary);}
+  .kpi .sub.good{color:var(--status-good);font-weight:600;}
+  .kpi .sub.crit{color:var(--status-critical);font-weight:600;}
+
+  /* ---------- CHART A: grouped bars ---------- */
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--text-secondary);}
+  .legend-item{display:flex;align-items:center;gap:6px;}
+  .legend-swatch{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  .grouped-chart{display:flex;align-items:flex-end;gap:22px;height:252px;padding:22px 4px 0;position:relative;}
+  .grouped-chart .gridlines{position:absolute;left:0;right:0;top:22px;bottom:28px;pointer-events:none;}
+  .grouped-chart .gridlines div{position:absolute;left:0;right:0;border-top:1px dashed var(--grid-line);}
+  .grouped-chart .gridlines span{position:absolute;left:-2px;transform:translate(-100%,-50%);font-size:10px;color:var(--text-muted);}
+  .group{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;}
+  .bars-pair{display:flex;align-items:flex-end;gap:5px;height:202px;width:100%;justify-content:center;}
+  .bar-col{width:34px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%;}
+  .bar-fill{border-radius:4px 4px 2px 2px;width:100%;position:relative;transition:filter .15s;}
+  .bar-fill:hover{filter:brightness(1.08);}
+  .bar-fill .val{
+    position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+    font-size:11px;font-weight:700;color:var(--text-primary);white-space:nowrap;
+  }
+  .bar-need{background:var(--need-bar);border-top:2px solid var(--need-bar-line);}
+  .group .glabel{margin-top:8px;font-size:11.5px;font-weight:600;color:var(--text-secondary);text-align:center;}
+  .group .gpct{font-size:10.5px;color:var(--text-muted);margin-top:1px;}
+
+  .tooltip-hint{font-size:11px;color:var(--text-muted);margin-top:6px;}
+
+  /* ---------- month filter pills ---------- */
+  .month-filter{display:flex;flex-wrap:wrap;gap:8px;}
+  .month-pill{
+    border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);
+    font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;cursor:pointer;
+    transition:all .12s;
+  }
+  .month-pill:hover{border-color:var(--brand-green);color:var(--brand-green);}
+  .month-pill.active{background:var(--brand-green);border-color:var(--brand-green);color:#fff;}
+  .month-pill .n{opacity:.75;font-weight:500;margin-left:3px;}
+
+  /* ---------- puesto table ---------- */
+  .puesto-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+  .puesto-table thead th{
+    text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);
+    font-weight:700;padding:0 10px 8px;border-bottom:1px solid var(--border);
+  }
+  .puesto-table thead th.num{text-align:right;}
+  .puesto-table tbody td{padding:9px 10px;border-bottom:1px solid var(--grid-line);vertical-align:middle;}
+  .puesto-table tbody tr:last-child td{border-bottom:none;}
+  .puesto-table td.num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+  .puesto-table td.zero{color:var(--text-muted);font-weight:500;}
+  .svc-badge{
+    display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;
+    color:#fff;white-space:nowrap;
+  }
+  .puesto-name{font-weight:600;color:var(--text-primary);}
+  .puesto-name .tag{display:block;font-size:10.5px;color:var(--text-muted);font-weight:500;margin-top:1px;}
+  .cov-cell{display:flex;align-items:center;gap:8px;min-width:150px;}
+  .cov-cell .track{flex:1;height:9px;background:var(--grid-line);border-radius:5px;overflow:hidden;}
+  .cov-cell .fill{height:100%;border-radius:5px;}
+  .cov-cell .pct{font-size:11.5px;font-weight:700;color:var(--text-secondary);width:40px;text-align:right;}
+
+  /* ---------- sector stacked bar ---------- */
+  .sector-row{display:grid;grid-template-columns:130px 1fr 34px;align-items:center;gap:10px;}
+  .sector-row .sname{font-size:12.5px;font-weight:600;color:var(--text-primary);}
+  .sector-row .stack{display:flex;height:16px;border-radius:4px;overflow:hidden;background:var(--grid-line);}
+  .sector-row .stack div{height:100%;}
+  .sector-row .stotal{font-size:12px;color:var(--text-muted);text-align:right;}
+
+  /* ---------- risk badges ---------- */
+  .risk-badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;color:#fff;white-space:nowrap;}
+  .risk-badge.venc{background:var(--status-critical);}
+  .risk-badge.porvencer{background:var(--status-warning);color:#3a2a00;}
+  .risk-badge.atrasado{background:var(--status-critical);}
+  .risk-badge.arrancar{background:var(--status-warning);color:#3a2a00;}
+  .risk-badge.margen{background:var(--status-good);}
+
+  /* ---------- coverage progress bars ---------- */
+  .cov-list{display:flex;flex-direction:column;gap:14px;}
+  .cov-row{display:grid;grid-template-columns:150px 1fr 210px;align-items:center;gap:14px;}
+  .cov-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+  .cov-track{display:flex;height:14px;background:var(--grid-line);border-radius:7px;overflow:hidden;}
+  .cov-fill{height:100%;}
+  .cov-nums{font-size:12px;color:var(--text-secondary);text-align:right;white-space:nowrap;}
+  .cov-nums b{color:var(--text-primary);}
+
+  /* ---------- funnel ---------- */
+  .funnel{display:flex;flex-direction:column;gap:10px;}
+  .funnel-row{display:grid;grid-template-columns:170px 1fr 90px;align-items:center;gap:14px;}
+  .funnel-name{font-size:12.5px;color:var(--text-secondary);font-weight:600;}
+  .funnel-track{height:20px;background:var(--grid-line);border-radius:5px;overflow:hidden;}
+  .funnel-fill{height:100%;border-radius:5px 3px 3px 5px;display:flex;align-items:center;padding-left:8px;}
+  .funnel-fill span{font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.15);}
+  .funnel-pct{font-size:12px;color:var(--text-muted);text-align:right;}
+
+  /* ---------- two-column charts ---------- */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .hbar-list{display:flex;flex-direction:column;gap:12px;margin-top:6px;}
+  .hbar-row{display:grid;grid-template-columns:120px 1fr 46px;align-items:center;gap:10px;}
+  .hbar-name{font-size:12.5px;color:var(--text-secondary);font-weight:600;}
+  .hbar-track{height:16px;background:var(--grid-line);border-radius:4px;overflow:hidden;}
+  .hbar-fill{height:100%;border-radius:4px 2px 2px 4px;}
+  .hbar-val{font-size:12.5px;font-weight:700;color:var(--text-primary);text-align:right;}
+
+  /* ---------- month timeline ---------- */
+  .month-chart{display:flex;align-items:flex-end;gap:8px;height:190px;padding-top:20px;position:relative;}
+  .month-chart .gridlines{position:absolute;left:0;right:0;top:20px;bottom:26px;pointer-events:none;}
+  .month-chart .gridlines div{position:absolute;left:0;right:0;border-top:1px dashed var(--grid-line);}
+  .month-chart .gridlines span{position:absolute;left:-4px;transform:translate(-100%,-50%);font-size:10px;color:var(--text-muted);}
+  .mbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative;}
+  .mbar-fill{width:60%;border-radius:4px 4px 2px 2px;background:var(--brand-green);position:relative;}
+  .mbar-fill.peak{background:var(--series-tlm);}
+  .mbar-fill .val{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:700;}
+  .mbar .mlabel{margin-top:6px;font-size:10.5px;color:var(--text-muted);}
+
+  /* ---------- footer note / table ---------- */
+  .callout{
+    display:flex;gap:12px;align-items:flex-start;background:var(--surface-1);
+    border:1px solid var(--border);border-left:3px solid var(--brand-lime);
+    border-radius:10px;padding:14px 16px;margin-top:16px;font-size:12.5px;color:var(--text-secondary);
+  }
+  .callout b{color:var(--text-primary);}
+
+  footer{
+    margin-top:44px;padding-top:18px;border-top:1px solid var(--border);
+    font-size:11.5px;color:var(--text-muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+
+  @media (max-width: 900px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .two-col{grid-template-columns:1fr;}
+    .grouped-chart{overflow-x:auto;}
+  }
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <img src="data:image/png;base64,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e/z222+S30QLCgokJxY6ODhITiYVxcXFGYQelLKRIhERVV0MPlTtODo6Su6vcunSJezfv19vqX9GRga+++47yeDSqlWrMsfkYeReRChljxEiIqq6ONRF1dLp06cl99mAbjO4evXqobCwELdv35ac+6RUKjF//vwy9xzRarWIiIgwmA9Vr149vPvuu3o1IiKq+tjjQ9VS+/btja7KSE9PR1RUFK5duyYZelQqFSZOnFhm6IHuPjpi6AF7e4iIqi0GH6qWFAoFXnjhBQwdOtTkFRfQ3X5j5syZJu83InXHe3B+DxFRtcWhLqr2cnJycPLkSdy6dQv3799HamoqNBoNFAoFvLy8UK9ePdSrVw8hISEICgoSf7xUO3bsMFh6q1Kp8Mwzz0ju6UFERFUbgw8RERHJBr+yEhERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWww+BAREZFsMPgQERGRbDD4EBERkWz8P72zXovQUe1wAAAAAElFTkSuQmCC" alt="EFiS - Energy Field Services">
+      <div class="brand-text">
+        <h1>Dashboard de Reclutamiento — Contrato Tecpetrol</h1>
+        <p>HRBP Lead · Neuquén, Argentina</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;">
+      <div class="meta">
+        <strong>Corte al 24/08/2026</strong>
+        Seguimiento de ingresos PP · fuente: planilla de reclutamiento EFiS
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button">🌙 Modo oscuro</button>
+    </div>
+  </header>
+
+  <!-- ================= KPIs ================= -->
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent:var(--brand-green)">
+      <div class="label">Pipeline total</div>
+      <div class="value">78</div>
+      <div class="sub">candidatos registrados</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-good)">
+      <div class="label">En proceso (activo)</div>
+      <div class="value">45</div>
+      <div class="sub good">58% del pipeline</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-critical)">
+      <div class="label">Cancelados</div>
+      <div class="value">27</div>
+      <div class="sub crit">35% del pipeline</div>
+    </div>
+    <div class="kpi" style="--accent:var(--series-alm)">
+      <div class="label">Cubierto (ingresos)</div>
+      <div class="value">6</div>
+      <div class="sub">3.4% de la necesidad PP</div>
+    </div>
+    <div class="kpi" style="--accent:var(--series-serge)">
+      <div class="label">Necesidad remanente</div>
+      <div class="value">168</div>
+      <div class="sub">de 174 puestos PP totales</div>
+    </div>
+    <div class="kpi" style="--accent:var(--brand-lime)">
+      <div class="label">Cobertura proyectada</div>
+      <div class="value">29%</div>
+      <div class="sub">cubierto&nbsp;+&nbsp;en proceso / necesidad</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span>📌</span>
+    <div><b>Lectura ejecutiva:</b> de los 174 puestos PP requeridos hasta jun-27, solo 6 están efectivamente cubiertos (3.4%) — el resto del 29% de cobertura proyectada todavía es pipeline en proceso, no gente trabajando. La cancelación subió de 25% a 35% en este corte, concentrada en Mantenimiento y Almacén. La mayor concentración de demanda cae en <b>octubre y noviembre 2026</b> (107 puestos combinados) y en <b>enero 2027</b> (35 puestos) — ver el plan de cobertura mensual más abajo para el detalle de ventana de sourcing.</div>
+  </div>
+
+
+  <!-- ================= CHART A2: FILTRO POR MES ================= -->
+  <h2 class="section-title"><span class="dot"></span>Candidatos en proceso vs. necesidad por mes</h2>
+  <p class="section-sub">Elegí un mes para ver, servicio por servicio, la necesidad de incorporación proyectada para ese período contra el pipeline activo actual. Solo se muestran los servicios con necesidad en el mes seleccionado.</p>
+  <div class="card">
+    <div class="month-filter" id="monthFilter"></div>
+    <div class="legend" style="margin-top:14px;">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--brand-green)"></span>Pipeline activo del servicio (ingresos + en proceso)</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--need-bar);border:1px solid var(--need-bar-line)"></span>Necesidad PP de ese mes</div>
+    </div>
+    <div class="grouped-chart" id="monthChartRoot" style="min-height:252px;"></div>
+    <p class="tooltip-hint" id="monthChartCaveat"></p>
+  </div>
+
+  <!-- ================= PLAN DE COBERTURA — OBJETIVO MENSUAL ================= -->
+  <h2 class="section-title"><span class="dot"></span>Plan de cobertura — objetivo mensual y ventana de sourcing</h2>
+  <p class="section-sub">Sin fecha de puesta en marcha confirmada, tomamos la necesidad mensual de la matriz PP como objetivo de cobertura. La fecha límite de arranque de sourcing surge de restar 90 días corridos al inicio de cada mes — duración real observada en los procesos ya finalizados de la planilla de Gerencia de Producción (mediana 97 días, mínimo 37, sobre 16 casos cerrados).</p>
+  <div class="card">
+    <table class="puesto-table" id="planTable">
+      <thead>
+        <tr>
+          <th>Mes objetivo</th>
+          <th class="num">Necesidad PP</th>
+          <th>Servicios involucrados</th>
+          <th>Fecha límite de arranque</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="planTableBody"></tbody>
+    </table>
+    <p class="tooltip-hint">Corte de análisis: 24/08/2026. Jun-26 y jul-26 ya transcurrieron (necesidad 7 y 11 puestos) — se evalúan como cumplimiento histórico, no como objetivo a futuro.</p>
+  </div>
+
+  <!-- ================= COBERTURA % ================= -->
+  <h2 class="section-title"><span class="dot"></span>Cobertura real por Servicio — cubierto vs. en proceso vs. remanente</h2>
+  <p class="section-sub">Un ingreso confirmado descuenta la necesidad de forma permanente; un candidato "en proceso" todavía no la cubre, solo la promete. Las dos franjas de la barra muestran esa diferencia — el tramo vacío es lo que falta abrir o generar en sourcing.</p>
+  <div class="card">
+    <div class="legend" style="margin-bottom:14px;">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--brand-green-dk)"></span>Cubierto (ingresos)</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--brand-lime)"></span>En proceso (pipeline activo)</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--need-bar);border:1px solid var(--need-bar-line)"></span>Remanente</div>
+    </div>
+    <div class="cov-list">
+      <div class="cov-row">
+        <div class="cov-name">Mantenimiento</div>
+        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:32.7%;background:var(--brand-lime);" title="En proceso: 17"></div></div>
+        <div class="cov-nums"><b>0</b> cub · <b>17</b> proc · necesidad 52</div>
+      </div>
+      <div class="cov-row">
+        <div class="cov-name">Producción</div>
+        <div class="cov-track"><div class="cov-fill" style="width:5.7%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:17.1%;background:var(--brand-lime);" title="En proceso: 6"></div></div>
+        <div class="cov-nums"><b>2</b> cub · <b>6</b> proc · necesidad 35</div>
+      </div>
+      <div class="cov-row">
+        <div class="cov-name">Almacén</div>
+        <div class="cov-track"><div class="cov-fill" style="width:6.3%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:21.9%;background:var(--brand-lime);" title="En proceso: 7"></div></div>
+        <div class="cov-nums"><b>2</b> cub · <b>7</b> proc · necesidad 32</div>
+      </div>
+      <div class="cov-row">
+        <div class="cov-name">Planta</div>
+        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:6.3%;background:var(--brand-lime);" title="En proceso: 2"></div></div>
+        <div class="cov-nums"><b>0</b> cub · <b>2</b> proc · necesidad 32</div>
+      </div>
+      <div class="cov-row">
+        <div class="cov-name">TLM</div>
+        <div class="cov-track"><div class="cov-fill" style="width:12.5%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:50%;background:var(--brand-lime);" title="En proceso: 8"></div></div>
+        <div class="cov-nums"><b>2</b> cub · <b>8</b> proc · necesidad 16</div>
+      </div>
+      <div class="cov-row">
+        <div class="cov-name">Serge</div>
+        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:71.4%;background:var(--brand-lime);" title="En proceso: 5"></div></div>
+        <div class="cov-nums"><b>0</b> cub · <b>5</b> proc · necesidad 7</div>
+      </div>
+    </div>
+    <p class="tooltip-hint">Base: 51 candidatos activos de la planilla PP actual (6 ingresados, 45 en proceso) sobre la necesidad total PP (Resumen de Ingresos 26-27, sin cambios). Ningún servicio tiene hoy más del 13% de su necesidad efectivamente cubierta.</p>
+  </div>
+
+  <!-- ================= DETALLE POR PUESTO ================= -->
+  <h2 class="section-title"><span class="dot"></span>Necesidad y candidatos por puesto específico</h2>
+  <p class="section-sub">Apertura de cada Servicio en los puestos que lo componen (ej. Mantenimiento → Instrumentista, Electricista, Mecánico), separando lo ya cubierto por ingreso de lo que todavía está en proceso.</p>
+  <div class="card">
+    <div class="month-filter" id="puestoFilter"></div>
+    <table class="puesto-table" id="puestoTable">
+      <thead>
+        <tr>
+          <th>Servicio</th>
+          <th>Puesto</th>
+          <th class="num">Necesidad PP</th>
+          <th class="num">Cubierto</th>
+          <th class="num">En proceso</th>
+          <th class="num">Remanente</th>
+          <th>Cobertura</th>
+        </tr>
+      </thead>
+      <tbody id="puestoTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ================= SEGUIMIENTO OPERATIVO GERENCIA PRODUCCIÓN ================= -->
+  <h2 class="section-title"><span class="dot"></span>Seguimiento operativo de vacantes — Gerencia de Producción</h2>
+  <p class="section-sub">Cruce con la planilla de proceso puesto por puesto que administra la Secretaría de Gerencia de Producción: 91 vacantes individuales con % de avance real por subproceso (perfiles, validación RRLL, entrevista, EPO, oferta, ingreso) y fecha objetivo de cobertura.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi" style="--accent:var(--brand-green)">
+      <div class="label">Puestos en seguimiento</div>
+      <div class="value">91</div>
+      <div class="sub">planilla Gerencia Producción</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-good)">
+      <div class="label">Finalizados</div>
+      <div class="value">16</div>
+      <div class="sub good">18% del total</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-warning)">
+      <div class="label">En curso</div>
+      <div class="value">20</div>
+      <div class="sub">22% del total</div>
+    </div>
+    <div class="kpi" style="--accent:var(--text-muted)">
+      <div class="label">Sin iniciar</div>
+      <div class="value">55</div>
+      <div class="sub">60% del total</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-critical)">
+      <div class="label">Vencidos</div>
+      <div class="value">2</div>
+      <div class="sub crit">fecha objetivo superada</div>
+    </div>
+    <div class="kpi" style="--accent:var(--status-warning)">
+      <div class="label">Por vencer</div>
+      <div class="value">6</div>
+      <div class="sub">próximos 30 días</div>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:18px;align-items:start;">
+    <div class="card">
+      <h3 style="margin:0 0 4px;font-size:13px;color:var(--text-secondary);">Avance por sector</h3>
+      <p class="section-sub" style="margin-bottom:14px;">Cantidad de puestos finalizados, en curso y sin iniciar dentro de cada sector.</p>
+      <div class="legend" style="margin-bottom:12px;">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--status-good)"></span>Finalizado</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--status-warning)"></span>En curso</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--need-bar);border:1px solid var(--need-bar-line)"></span>Sin iniciar</div>
+      </div>
+      <div id="sectorStackChart" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 4px;font-size:13px;color:var(--text-secondary);">Alertas de vencimiento</h3>
+      <p class="section-sub" style="margin-bottom:14px;">Vacantes cuya fecha objetivo ya pasó o vence dentro de los próximos 30 días (corte 19/08/2026).</p>
+      <table class="puesto-table" id="riskTable">
+        <thead>
+          <tr><th>Estado</th><th>Puesto</th><th class="num">Avance</th><th>Fecha objetivo</th></tr>
+        </thead>
+        <tbody id="riskTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= FUNNEL ================= -->
+  <h2 class="section-title"><span class="dot"></span>Avance del proceso — embudo de selección</h2>
+  <p class="section-sub">Candidatos que completaron cada etapa (según fecha registrada), sobre el total de 78 candidatos del pipeline. Incluye las dos etapas nuevas de la planilla: "Enviado a Línea" y "OK de RRLL".</p>
+  <div class="card">
+    <div class="funnel">
+      <div class="funnel-row">
+        <div class="funnel-name">CV Recibido</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:100%;background:#d7f0e3;"><span style="color:var(--text-primary)">37</span></div></div>
+        <div class="funnel-pct">47%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Enviado a Línea</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:81%;background:#b7e3cd;"><span style="color:var(--text-primary)">30</span></div></div>
+        <div class="funnel-pct">38%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Aprobado para entrevista</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:78%;background:#9ddcc0;"><span style="color:var(--text-primary)">29</span></div></div>
+        <div class="funnel-pct">37%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Entrevista</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:49%;background:#8fd2b0;"><span style="color:var(--text-primary)">18</span></div></div>
+        <div class="funnel-pct">23%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">OK de RRLL</div>
+        <div class="funnel-track" style="background:rgba(208,59,59,0.15);"><div class="funnel-fill" style="width:2%;background:var(--status-critical);"><span>0</span></div></div>
+        <div class="funnel-pct" style="color:var(--status-critical);font-weight:700;">0% ⚠️</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Examen Médico</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:38%;background:#5cbd90;"><span>14</span></div></div>
+        <div class="funnel-pct">18%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Clínica</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:35%;background:#2ba36f;"><span>13</span></div></div>
+        <div class="funnel-pct">17%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Aptitud</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:27%;background:#008750;"><span>10</span></div></div>
+        <div class="funnel-pct">13%</div>
+      </div>
+      <div class="funnel-row">
+        <div class="funnel-name">Ingreso</div>
+        <div class="funnel-track"><div class="funnel-fill" style="width:16%;background:#045f38;"><span>6</span></div></div>
+        <div class="funnel-pct">8%</div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:16px;">
+      <span>🔴</span>
+      <div><b>Cuello de botella nuevo:</b> "OK de RRLL" no tiene ni un solo caso cerrado todavía. Cuatro candidatos están esperando ese paso, entre ellos uno (Rios Fernando, TLM) que ya está "Apto" desde el 07/06 — hace más de dos meses — y no puede formalizar su ingreso solo por esto.</div>
+    </div>
+  </div>
+
+  <!-- ================= CANCELADOS ================= -->
+  <h2 class="section-title"><span class="dot"></span>Cancelados por procedencia y por servicio</h2>
+  <p class="section-sub">27 candidatos cancelados sobre 78 totales (35% — subió desde 25% en el corte anterior). Motivos principales: "No Califica en Entrevista" (9 casos), "No Califica" genérico (8 casos) y "CV Rechazado por Línea" (6 casos).</p>
+  <div class="two-col">
+    <div class="card">
+      <h3 style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Por procedencia</h3>
+      <div class="hbar-list">
+        <div class="hbar-row">
+          <div class="hbar-name">Sindicato</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--series-mant);"></div></div>
+          <div class="hbar-val">11</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">Consultora</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:91%;background:var(--series-tlm);"></div></div>
+          <div class="hbar-val">10</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">Postulación</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:55%;background:var(--series-alm);"></div></div>
+          <div class="hbar-val">6</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Por servicio</h3>
+      <div class="hbar-list">
+        <div class="hbar-row">
+          <div class="hbar-name">Mantenimiento</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--status-critical);"></div></div>
+          <div class="hbar-val">11</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">Almacén</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:91%;background:var(--status-critical);"></div></div>
+          <div class="hbar-val">10</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">TLM</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:27%;background:var(--status-critical);"></div></div>
+          <div class="hbar-val">3</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">Serge</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:18%;background:var(--status-critical);"></div></div>
+          <div class="hbar-val">2</div>
+        </div>
+        <div class="hbar-row">
+          <div class="hbar-name">Producción</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:9%;background:var(--status-critical);"></div></div>
+          <div class="hbar-val">1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span>⚠️</span>
+    <div><b>Foco de atención:</b> Mantenimiento pasó a liderar las bajas (11 casos, casi todas en la tanda de Instrumentación/Mecánica entrevistada el 14/08 — 4 de 9 candidatos rechazados por "No Califica"). Almacén sigue con el mismo patrón que ya veníamos marcando (10 casos). Vale la pena una revisión conjunta con quien arma el perfil de búsqueda en esos dos servicios antes de seguir generando volumen.</div>
+  </div>
+
+  <!-- ================= NECESIDAD MENSUAL ================= -->
+  <h2 class="section-title"><span class="dot"></span>Necesidad de incorporaciones PP por mes</h2>
+  <p class="section-sub">Distribución mensual de los 174 puestos PP requeridos (may-26 a jun-27). Los picos de octubre y noviembre 2026 concentran el 61% de la demanda total.</p>
+  <div class="card">
+    <div class="month-chart">
+      <div class="gridlines">
+        <div style="bottom:0%;"><span>0</span></div>
+        <div style="bottom:50%;"><span>34</span></div>
+        <div style="bottom:100%;"><span>68</span></div>
+      </div>
+      <!-- max = 68 (oct-26) -->
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">may-26</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:10.3%;"><span class="val">7</span></div><div class="mlabel">jun-26</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:16.2%;"><span class="val">11</span></div><div class="mlabel">jul-26</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">ago-26</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">sep-26</div></div>
+      <div class="mbar"><div class="mbar-fill peak" style="height:100%;"><span class="val">68</span></div><div class="mlabel">oct-26</div></div>
+      <div class="mbar"><div class="mbar-fill peak" style="height:57.4%;"><span class="val">39</span></div><div class="mlabel">nov-26</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:5.9%;"><span class="val">4</span></div><div class="mlabel">dic-26</div></div>
+      <div class="mbar"><div class="mbar-fill peak" style="height:51.5%;"><span class="val">35</span></div><div class="mlabel">ene-27</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:5.9%;"><span class="val">4</span></div><div class="mlabel">feb-27</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:8.8%;"><span class="val">6</span></div><div class="mlabel">mar-27</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">abr-27</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">may-27</div></div>
+      <div class="mbar"><div class="mbar-fill" style="height:0%;"></div><div class="mlabel">jun-27</div></div>
+    </div>
+  </div>
+
+  <!-- ================= MOTIVOS DE BAJA ================= -->
+  <h2 class="section-title"><span class="dot"></span>Principales motivos de baja</h2>
+  <div class="card">
+    <div class="hbar-list">
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">No Califica en Entrevista</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">9</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">No Califica (genérico)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:89%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">8</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">CV Rechazado por Línea</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:67%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">6</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">Rechaza Propuesta</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">1</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">No avanza (definido por línea)</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">1</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">No se presentó a examen preocupacional</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">1</div>
+      </div>
+      <div class="hbar-row" style="grid-template-columns:220px 1fr 46px;">
+        <div class="hbar-name">Secundario incompleto</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:11%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">1</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>EFiS · Energy Field Services — Dashboard de Reclutamiento Tecpetrol</span>
+    <span>Fuente: "Seguimiento ingresos - nuevo" · Datos al 19/08/2026 · Elaborado por HRBP Lead Neuquén</span>
+  </footer>
+
+</div>
+
+<script>
+  const btn = document.getElementById('themeToggle');
+  btn.addEventListener('click', () => {
+    const body = document.body;
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    btn.textContent = isDark ? '🌙 Modo oscuro' : '☀️ Modo claro';
+  });
+
+  /* ---------- Necesidad PP por mes y por Servicio (may-26 a jun-27) ---------- */
+  const monthlyNeed = {
+    'jun-26': { Planta: 6, Serge: 1 },
+    'jul-26': { Almacén: 5, 'Producción': 6 },
+    'oct-26': { Mantenimiento: 24, Planta: 19, 'Producción': 5, Serge: 5, TLM: 15 },
+    'nov-26': { Almacén: 27, Mantenimiento: 12 },
+    'dic-26': { Mantenimiento: 4 },
+    'ene-27': { Mantenimiento: 8, Planta: 3, 'Producción': 22, Serge: 1, TLM: 1 },
+    'feb-27': { Mantenimiento: 4 },
+    'mar-27': { Planta: 4, 'Producción': 2 },
+  };
+  // Pipeline activo total por servicio: ingresos confirmados + candidatos en proceso (todas las etapas, sin cancelados).
+  // El pipeline no registra un mes objetivo por candidato, así que se compara este total contra la
+  // necesidad puntual de ese servicio en el mes elegido — un ingreso ya cuenta como cobertura real.
+  const inProceso = { Almacén: 9, Mantenimiento: 17, Planta: 2, 'Producción': 8, Serge: 5, TLM: 10 };
+  const serviceColor = {
+    Almacén: 'var(--series-alm)', Mantenimiento: 'var(--series-mant)', Planta: 'var(--series-planta)',
+    'Producción': 'var(--series-prod)', Serge: 'var(--series-serge)', TLM: 'var(--series-tlm)'
+  };
+  const monthLabelFull = {
+    'jun-26': 'Junio 2026', 'jul-26': 'Julio 2026', 'oct-26': 'Octubre 2026', 'nov-26': 'Noviembre 2026',
+    'dic-26': 'Diciembre 2026', 'ene-27': 'Enero 2027', 'feb-27': 'Febrero 2027', 'mar-27': 'Marzo 2027'
+  };
+
+  const filterEl = document.getElementById('monthFilter');
+  const chartEl = document.getElementById('monthChartRoot');
+  const caveatEl = document.getElementById('monthChartCaveat');
+
+  Object.keys(monthlyNeed).forEach(m => {
+    const total = Object.values(monthlyNeed[m]).reduce((a, b) => a + b, 0);
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'month-pill';
+    pill.dataset.month = m;
+    pill.innerHTML = m.replace('-', "'") + ' <span class="n">(' + total + ')</span>';
+    pill.addEventListener('click', () => renderMonth(m));
+    filterEl.appendChild(pill);
+  });
+
+  function renderMonth(month) {
+    [...filterEl.children].forEach(p => p.classList.toggle('active', p.dataset.month === month));
+    const need = monthlyNeed[month];
+    const services = Object.keys(need).sort((a, b) => need[b] - need[a]);
+    const maxVal = Math.max(...services.map(s => Math.max(need[s], inProceso[s] || 0)), 1);
+    const niceMax = Math.ceil(maxVal / 4) * 4 || 4;
+
+    let gridHtml = '<div class="gridlines">';
+    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+      gridHtml += `<div style="bottom:${f * 100}%;"><span>${Math.round(niceMax * f)}</span></div>`;
+    });
+    gridHtml += '</div>';
+
+    let groupsHtml = '';
+    services.forEach(s => {
+      const enProc = inProceso[s] || 0;
+      const nec = need[s];
+      const enProcH = (enProc / niceMax) * 100;
+      const necH = (nec / niceMax) * 100;
+      const pct = nec > 0 ? Math.round((enProc / nec) * 100) : 0;
+      groupsHtml += `
+        <div class="group">
+          <div class="bars-pair">
+            <div class="bar-col" style="height:${enProcH}%;"><div class="bar-fill" style="height:100%;background:${serviceColor[s]}" title="${s} · En proceso: ${enProc}"><span class="val">${enProc}</span></div></div>
+            <div class="bar-col" style="height:${necH}%;"><div class="bar-fill bar-need" style="height:100%;" title="${s} · Necesidad ${monthLabelFull[month]}: ${nec}"><span class="val">${nec}</span></div></div>
+          </div>
+          <div class="glabel">${s}</div>
+          <div class="gpct">${pct}% cobertura</div>
+        </div>`;
+    });
+
+    chartEl.innerHTML = gridHtml + groupsHtml;
+    const totalNec = services.reduce((a, s) => a + need[s], 0);
+    const totalProc = services.reduce((a, s) => a + (inProceso[s] || 0), 0);
+    caveatEl.textContent = `${monthLabelFull[month]}: ${totalNec} puestos requeridos en ${services.length} servicio(s) · pipeline activo relacionado: ${totalProc} candidatos (${Math.round(totalProc/totalNec*100)}% de cobertura agregada). El pipeline no distingue mes objetivo por candidato: la comparación usa el total activo de cada servicio.`;
+  }
+
+  renderMonth('oct-26');
+
+  /* ---------- Plan de cobertura: objetivo mensual + ventana de sourcing (lead time 90 días) ---------- */
+  const planData = [
+    { mes: 'Octubre 2026', nec: 68, servicios: 'Mantenimiento 24 · Planta 19 · TLM 15 · Producción 5 · Serge 5', limite: '03/07/2026', estado: 'atrasado', estadoLabel: 'Arranque ya vencido · 52 días' },
+    { mes: 'Noviembre 2026', nec: 39, servicios: 'Almacén 27 · Mantenimiento 12', limite: '03/08/2026', estado: 'atrasado', estadoLabel: 'Arranque ya vencido · 21 días' },
+    { mes: 'Diciembre 2026', nec: 4, servicios: 'Mantenimiento 4', limite: '02/09/2026', estado: 'arrancar', estadoLabel: 'Arrancar ya · faltan 9 días' },
+    { mes: 'Enero 2027', nec: 35, servicios: 'Producción 22 · Mantenimiento 8 · Planta 3 · Serge 1 · TLM 1', limite: '03/10/2026', estado: 'arrancar', estadoLabel: 'Arrancar pronto · faltan 40 días' },
+    { mes: 'Febrero 2027', nec: 4, servicios: 'Mantenimiento 4', limite: '03/11/2026', estado: 'margen', estadoLabel: 'Con margen · faltan 71 días' },
+    { mes: 'Marzo 2027', nec: 6, servicios: 'Planta 4 · Producción 2', limite: '01/12/2026', estado: 'margen', estadoLabel: 'Con margen · faltan 99 días' },
+  ];
+  document.getElementById('planTableBody').innerHTML = planData.map(p => `
+    <tr>
+      <td class="puesto-name">${p.mes}</td>
+      <td class="num">${p.nec}</td>
+      <td style="font-size:12.5px;color:var(--text-secondary);">${p.servicios}</td>
+      <td>${p.limite}</td>
+      <td><span class="risk-badge ${p.estado}">${p.estadoLabel}</span></td>
+    </tr>`).join('');
+
+  /* ---------- Detalle por puesto (Servicio -> Puesto -> Necesidad / Cubierto / En proceso / Remanente) ---------- */
+  const puestoData = [
+    {"Servicio":"Almacén","Puesto":"Auxiliar de Almacén","Suma":32,"Cubierto":2,"EnProceso":6},
+    {"Servicio":"Almacén","Puesto":"Trainee","Suma":0,"Cubierto":0,"EnProceso":1,"nota":"sin necesidad PP registrada"},
+    {"Servicio":"Mantenimiento","Puesto":"Mecánico","Suma":14,"Cubierto":0,"EnProceso":3},
+    {"Servicio":"Mantenimiento","Puesto":"Instrumentista","Suma":12,"Cubierto":0,"EnProceso":6},
+    {"Servicio":"Mantenimiento","Puesto":"Electricista","Suma":8,"Cubierto":0,"EnProceso":3},
+    {"Servicio":"Mantenimiento","Puesto":"Generación","Suma":5,"Cubierto":0,"EnProceso":4},
+    {"Servicio":"Mantenimiento","Puesto":"Well Service","Suma":5,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Mantenimiento","Puesto":"Auxiliar de Mantenimiento","Suma":4,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Mantenimiento","Puesto":"Compresión","Suma":4,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Mantenimiento","Puesto":"Instrumentación / Mecánica","Suma":0,"Cubierto":0,"EnProceso":1,"nota":"combo · podría cubrir Instrumentista o Mecánico"},
+    {"Servicio":"Planta","Puesto":"Operador de Planta","Suma":22,"Cubierto":0,"EnProceso":2},
+    {"Servicio":"Planta","Puesto":"Descargadero","Suma":6,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Planta","Puesto":"Tareas Generales","Suma":4,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Producción","Puesto":"Well Service","Suma":19,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Producción","Puesto":"Operador de Campo","Suma":12,"Cubierto":2,"EnProceso":6},
+    {"Servicio":"Producción","Puesto":"Almacenamiento de Agua","Suma":4,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"Serge","Puesto":"Mecánico de Flota","Suma":4,"Cubierto":0,"EnProceso":5},
+    {"Servicio":"Serge","Puesto":"Tareas Generales","Suma":3,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"TLM","Puesto":"Operador TLM","Suma":12,"Cubierto":2,"EnProceso":2},
+    {"Servicio":"TLM","Puesto":"Mantenimiento TLM","Suma":4,"Cubierto":0,"EnProceso":0},
+    {"Servicio":"TLM","Puesto":"CDA / TLM","Suma":0,"Cubierto":0,"EnProceso":6,"nota":"especialidad a confirmar con línea"},
+  ];
+  const svcBadgeColor = {
+    Almacén: 'var(--series-alm)', Mantenimiento: 'var(--series-mant)', Planta: 'var(--series-planta)',
+    'Producción': 'var(--series-prod)', Serge: 'var(--series-serge)', TLM: 'var(--series-tlm)'
+  };
+
+  const puestoFilterEl = document.getElementById('puestoFilter');
+  const puestoBodyEl = document.getElementById('puestoTableBody');
+  const puestoServices = ['Todos', ...Object.keys(svcBadgeColor)];
+
+  puestoServices.forEach(s => {
+    const count = s === 'Todos' ? puestoData.length : puestoData.filter(d => d.Servicio === s).length;
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'month-pill';
+    pill.dataset.svc = s;
+    pill.innerHTML = s + ' <span class="n">(' + count + ')</span>';
+    pill.addEventListener('click', () => renderPuestoTable(s));
+    puestoFilterEl.appendChild(pill);
+  });
+
+  function renderPuestoTable(svc) {
+    [...puestoFilterEl.children].forEach(p => p.classList.toggle('active', p.dataset.svc === svc));
+    const rows = svc === 'Todos' ? puestoData : puestoData.filter(d => d.Servicio === svc);
+    puestoBodyEl.innerHTML = rows.map(d => {
+      const remanente = Math.max(d.Suma - d.Cubierto, 0);
+      const pctCub = d.Suma > 0 ? (d.Cubierto / d.Suma) * 100 : 0;
+      const pctProc = d.Suma > 0 ? (d.EnProceso / d.Suma) * 100 : 0;
+      const pctLabel = d.Suma > 0 ? Math.round(pctCub + pctProc) + '%' : (d.EnProceso > 0 ? 'n/a' : '—');
+      return `
+        <tr>
+          <td><span class="svc-badge" style="background:${svcBadgeColor[d.Servicio]}">${d.Servicio}</span></td>
+          <td class="puesto-name">${d.Puesto}${d.nota ? `<span class="tag">${d.nota}</span>` : ''}</td>
+          <td class="num${d.Suma===0?' zero':''}">${d.Suma}</td>
+          <td class="num${d.Cubierto===0?' zero':''}">${d.Cubierto}</td>
+          <td class="num${d.EnProceso===0?' zero':''}">${d.EnProceso}</td>
+          <td class="num${remanente===0?' zero':''}">${remanente}</td>
+          <td>
+            <div class="cov-cell">
+              <div class="track" style="display:flex;"><div class="fill" style="width:${Math.min(pctCub,100)}%;background:var(--brand-green-dk);"></div><div class="fill" style="width:${Math.min(pctProc,100-Math.min(pctCub,100))}%;background:var(--brand-lime);"></div></div>
+              <div class="pct">${pctLabel}</div>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  renderPuestoTable('Todos');
+
+  /* ---------- Seguimiento operativo (planilla Gerencia de Producción) ---------- */
+  const sectorStatus = [
+    { sector: 'Mantenimiento', fin: 1, curso: 0, sin: 28 },
+    { sector: 'Plantas', fin: 1, curso: 1, sin: 19 },
+    { sector: 'Operaciones', fin: 8, curso: 2, sin: 5 },
+    { sector: 'CDA Móvil', fin: 0, curso: 12, sin: 0 },
+    { sector: 'Almacén', fin: 2, curso: 5, sin: 0 },
+    { sector: 'Serge', fin: 1, curso: 0, sin: 3 },
+    { sector: 'TLM', fin: 3, curso: 0, sin: 0 },
+  ];
+  const sectorChartEl = document.getElementById('sectorStackChart');
+  sectorChartEl.innerHTML = sectorStatus.map(s => {
+    const total = s.fin + s.curso + s.sin;
+    const pf = (s.fin / total) * 100, pc = (s.curso / total) * 100, ps = (s.sin / total) * 100;
+    return `
+      <div class="sector-row">
+        <div class="sname">${s.sector}</div>
+        <div class="stack" title="${s.sector} · Finalizado ${s.fin} · En curso ${s.curso} · Sin iniciar ${s.sin}">
+          ${s.fin ? `<div style="width:${pf}%;background:var(--status-good);"></div>` : ''}
+          ${s.curso ? `<div style="width:${pc}%;background:var(--status-warning);"></div>` : ''}
+          ${s.sin ? `<div style="width:${ps}%;background:var(--need-bar);"></div>` : ''}
+        </div>
+        <div class="stotal">${total}</div>
+      </div>`;
+  }).join('');
+
+  const riskRows = [
+    { estado: 'venc', label: 'Vencido', puesto: 'Trainee (Planta)', avance: '37%', fecha: '01/07/2026', dias: '-50 días' },
+    { estado: 'venc', label: 'Vencido', puesto: 'Reemplazo Botella (Operaciones)', avance: '23%', fecha: '15/08/2026', dias: '-5 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Almacén 1', avance: '37%', fecha: '01/09/2026', dias: '12 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Almacén 3', avance: '56%', fecha: '01/09/2026', dias: '12 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Relevo Almacén 1', avance: '56%', fecha: '01/09/2026', dias: '12 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Almacén 4', avance: '75%', fecha: '01/09/2026', dias: '12 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Vacante Almacén (F. Gutiérrez)', avance: '23%', fecha: '01/09/2026', dias: '12 días' },
+    { estado: 'porvencer', label: 'Por vencer', puesto: 'Vacante Oper. Campo (R. Mendoza)', avance: '23%', fecha: '01/09/2026', dias: '12 días' },
+  ];
+  document.getElementById('riskTableBody').innerHTML = riskRows.map(r => `
+    <tr>
+      <td><span class="risk-badge ${r.estado}">${r.label}${r.estado==='venc' ? ' · ' + r.dias : ''}</span></td>
+      <td class="puesto-name">${r.puesto}</td>
+      <td class="num">${r.avance}</td>
+      <td>${r.fecha}${r.estado==='porvencer' ? ` <span class="tag" style="display:inline;color:var(--text-muted);">(${r.dias})</span>` : ''}</td>
+    </tr>`).join('');
+</script>
+
+</body>
+</html>
