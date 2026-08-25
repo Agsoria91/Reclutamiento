@@ -288,50 +288,53 @@
     </div>
     <div style="display:flex;align-items:center;">
       <div class="meta">
-        <strong>Corte al 24/08/2026</strong>
-        Seguimiento de ingresos PP · fuente: planilla de reclutamiento EFiS
+        <strong id="corteFecha">Corte al 24/08/2026</strong>
+        <span id="fuenteTexto">Seguimiento de ingresos PP · fuente: planilla de reclutamiento EFiS</span>
       </div>
+      <input type="file" id="csvInput" accept=".csv" style="display:none;">
+      <button class="theme-toggle" id="importBtn" type="button" title="Actualizar los datos de candidatos sin volver a generar el dashboard">📤 Actualizar CSV</button>
       <button class="theme-toggle" id="themeToggle" type="button">🌙 Modo oscuro</button>
     </div>
   </header>
+  <div id="importStatus" style="display:none;margin:-10px 0 22px;font-size:12px;padding:10px 16px;border-radius:10px;"></div>
 
   <!-- ================= KPIs ================= -->
   <div class="kpi-grid">
     <div class="kpi" style="--accent:var(--brand-green)">
       <div class="label">Pipeline total</div>
-      <div class="value">78</div>
+      <div class="value" id="kpiPipeline">78</div>
       <div class="sub">candidatos registrados</div>
     </div>
     <div class="kpi" style="--accent:var(--status-good)">
       <div class="label">En proceso (activo)</div>
-      <div class="value">45</div>
-      <div class="sub good">58% del pipeline</div>
+      <div class="value" id="kpiEnProceso">45</div>
+      <div class="sub good" id="kpiEnProcesoSub">58% del pipeline</div>
     </div>
     <div class="kpi" style="--accent:var(--status-critical)">
       <div class="label">Cancelados</div>
-      <div class="value">27</div>
-      <div class="sub crit">35% del pipeline</div>
+      <div class="value" id="kpiCancelados">27</div>
+      <div class="sub crit" id="kpiCanceladosSub">35% del pipeline</div>
     </div>
     <div class="kpi" style="--accent:var(--series-alm)">
       <div class="label">Cubierto (ingresos)</div>
-      <div class="value">6</div>
-      <div class="sub">3.4% de la necesidad PP</div>
+      <div class="value" id="kpiCubierto">6</div>
+      <div class="sub" id="kpiCubiertoSub">3.4% de la necesidad PP</div>
     </div>
     <div class="kpi" style="--accent:var(--series-serge)">
       <div class="label">Necesidad remanente</div>
-      <div class="value">168</div>
-      <div class="sub">de 174 puestos PP totales</div>
+      <div class="value" id="kpiRemanente">168</div>
+      <div class="sub" id="kpiRemanenteSub">de 174 puestos PP totales</div>
     </div>
     <div class="kpi" style="--accent:var(--brand-lime)">
       <div class="label">Cobertura proyectada</div>
-      <div class="value">29%</div>
+      <div class="value" id="kpiCobertura">29%</div>
       <div class="sub">cubierto&nbsp;+&nbsp;en proceso / necesidad</div>
     </div>
   </div>
 
   <div class="callout">
     <span>📌</span>
-    <div><b>Lectura ejecutiva:</b> de los 174 puestos PP requeridos hasta jun-27, solo 6 están efectivamente cubiertos (3.4%) — el resto del 29% de cobertura proyectada todavía es pipeline en proceso, no gente trabajando. La cancelación subió de 25% a 35% en este corte, concentrada en Mantenimiento y Almacén. La mayor concentración de demanda cae en <b>octubre y noviembre 2026</b> (107 puestos combinados) y en <b>enero 2027</b> (35 puestos) — ver el plan de cobertura mensual más abajo para el detalle de ventana de sourcing.</div>
+    <div><b>Lectura ejecutiva:</b> <span id="calloutText">de los 174 puestos PP requeridos hasta jun-27, solo 6 están efectivamente cubiertos (3.4%) — el resto del 29% de cobertura proyectada todavía es pipeline en proceso, no gente trabajando. La cancelación es del 35% en este corte, concentrada en Mantenimiento y Almacén. La mayor concentración de demanda cae en <b>octubre y noviembre 2026</b> (107 puestos combinados) y en <b>enero 2027</b> (35 puestos) — ver el plan de cobertura mensual más abajo para el detalle de ventana de sourcing.</span></div>
   </div>
 
 
@@ -376,39 +379,8 @@
       <div class="legend-item"><span class="legend-swatch" style="background:var(--brand-lime)"></span>En proceso (pipeline activo)</div>
       <div class="legend-item"><span class="legend-swatch" style="background:var(--need-bar);border:1px solid var(--need-bar-line)"></span>Remanente</div>
     </div>
-    <div class="cov-list">
-      <div class="cov-row">
-        <div class="cov-name">Mantenimiento</div>
-        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:32.7%;background:var(--brand-lime);" title="En proceso: 17"></div></div>
-        <div class="cov-nums"><b>0</b> cub · <b>17</b> proc · necesidad 52</div>
-      </div>
-      <div class="cov-row">
-        <div class="cov-name">Producción</div>
-        <div class="cov-track"><div class="cov-fill" style="width:5.7%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:17.1%;background:var(--brand-lime);" title="En proceso: 6"></div></div>
-        <div class="cov-nums"><b>2</b> cub · <b>6</b> proc · necesidad 35</div>
-      </div>
-      <div class="cov-row">
-        <div class="cov-name">Almacén</div>
-        <div class="cov-track"><div class="cov-fill" style="width:6.3%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:21.9%;background:var(--brand-lime);" title="En proceso: 7"></div></div>
-        <div class="cov-nums"><b>2</b> cub · <b>7</b> proc · necesidad 32</div>
-      </div>
-      <div class="cov-row">
-        <div class="cov-name">Planta</div>
-        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:6.3%;background:var(--brand-lime);" title="En proceso: 2"></div></div>
-        <div class="cov-nums"><b>0</b> cub · <b>2</b> proc · necesidad 32</div>
-      </div>
-      <div class="cov-row">
-        <div class="cov-name">TLM</div>
-        <div class="cov-track"><div class="cov-fill" style="width:12.5%;background:var(--brand-green-dk);" title="Cubierto: 2"></div><div class="cov-fill" style="width:50%;background:var(--brand-lime);" title="En proceso: 8"></div></div>
-        <div class="cov-nums"><b>2</b> cub · <b>8</b> proc · necesidad 16</div>
-      </div>
-      <div class="cov-row">
-        <div class="cov-name">Serge</div>
-        <div class="cov-track"><div class="cov-fill" style="width:0%;background:var(--brand-green-dk);" title="Cubierto: 0"></div><div class="cov-fill" style="width:71.4%;background:var(--brand-lime);" title="En proceso: 5"></div></div>
-        <div class="cov-nums"><b>0</b> cub · <b>5</b> proc · necesidad 7</div>
-      </div>
-    </div>
-    <p class="tooltip-hint">Base: 51 candidatos activos de la planilla PP actual (6 ingresados, 45 en proceso) sobre la necesidad total PP (Resumen de Ingresos 26-27, sin cambios). Ningún servicio tiene hoy más del 13% de su necesidad efectivamente cubierta.</p>
+    <div class="cov-list" id="covList"></div>
+    <p class="tooltip-hint" id="covHint">Base: 51 candidatos activos de la planilla PP actual (6 ingresados, 45 en proceso) sobre la necesidad total PP (Resumen de Ingresos 26-27, sin cambios).</p>
   </div>
 
   <!-- ================= DETALLE POR PUESTO ================= -->
@@ -520,63 +492,21 @@
 
   <!-- ================= CANCELADOS ================= -->
   <h2 class="section-title"><span class="dot"></span>Cancelados por procedencia y por servicio</h2>
-  <p class="section-sub">27 candidatos cancelados sobre 78 totales (35% — subió desde 25% en el corte anterior). Motivos principales: "No Califica en Entrevista" (9 casos), "No Califica" genérico (8 casos) y "CV Rechazado por Línea" (6 casos).</p>
+  <p class="section-sub" id="canceladosSub">27 candidatos cancelados sobre 78 totales (35%).</p>
   <div class="two-col">
     <div class="card">
       <h3 style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Por procedencia</h3>
-      <div class="hbar-list">
-        <div class="hbar-row">
-          <div class="hbar-name">Sindicato</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--series-mant);"></div></div>
-          <div class="hbar-val">11</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">Consultora</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:91%;background:var(--series-tlm);"></div></div>
-          <div class="hbar-val">10</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">Postulación</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:55%;background:var(--series-alm);"></div></div>
-          <div class="hbar-val">6</div>
-        </div>
-      </div>
+      <div class="hbar-list" id="canceladosPorProcedencia"></div>
     </div>
     <div class="card">
       <h3 style="margin:0 0 12px;font-size:13px;color:var(--text-secondary);">Por servicio</h3>
-      <div class="hbar-list">
-        <div class="hbar-row">
-          <div class="hbar-name">Mantenimiento</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--status-critical);"></div></div>
-          <div class="hbar-val">11</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">Almacén</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:91%;background:var(--status-critical);"></div></div>
-          <div class="hbar-val">10</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">TLM</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:27%;background:var(--status-critical);"></div></div>
-          <div class="hbar-val">3</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">Serge</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:18%;background:var(--status-critical);"></div></div>
-          <div class="hbar-val">2</div>
-        </div>
-        <div class="hbar-row">
-          <div class="hbar-name">Producción</div>
-          <div class="hbar-track"><div class="hbar-fill" style="width:9%;background:var(--status-critical);"></div></div>
-          <div class="hbar-val">1</div>
-        </div>
-      </div>
+      <div class="hbar-list" id="canceladosPorServicio"></div>
     </div>
   </div>
 
   <div class="callout">
     <span>⚠️</span>
-    <div><b>Foco de atención:</b> Mantenimiento pasó a liderar las bajas (11 casos, casi todas en la tanda de Instrumentación/Mecánica entrevistada el 14/08 — 4 de 9 candidatos rechazados por "No Califica"). Almacén sigue con el mismo patrón que ya veníamos marcando (10 casos). Vale la pena una revisión conjunta con quien arma el perfil de búsqueda en esos dos servicios antes de seguir generando volumen.</div>
+    <div id="canceladosFoco"><b>Foco de atención:</b> Mantenimiento concentra la mayor cantidad de bajas.</div>
   </div>
 
   <!-- ================= NECESIDAD MENSUAL ================= -->
@@ -658,7 +588,9 @@
   // Pipeline activo total por servicio: ingresos confirmados + candidatos en proceso (todas las etapas, sin cancelados).
   // El pipeline no registra un mes objetivo por candidato, así que se compara este total contra la
   // necesidad puntual de ese servicio en el mes elegido — un ingreso ya cuenta como cobertura real.
-  const inProceso = { Almacén: 9, Mantenimiento: 17, Planta: 2, 'Producción': 8, Serge: 5, TLM: 10 };
+  // Se recalcula en recomputeAll() a partir de `candidatos`; el valor de acá es solo el arranque en frío.
+  let inProceso = {};
+  let currentMonth = 'oct-26';
   const serviceColor = {
     Almacén: 'var(--series-alm)', Mantenimiento: 'var(--series-mant)', Planta: 'var(--series-planta)',
     'Producción': 'var(--series-prod)', Serge: 'var(--series-serge)', TLM: 'var(--series-tlm)'
@@ -684,6 +616,7 @@
   });
 
   function renderMonth(month) {
+    currentMonth = month;
     [...filterEl.children].forEach(p => p.classList.toggle('active', p.dataset.month === month));
     const need = monthlyNeed[month];
     const services = Object.keys(need).sort((a, b) => need[b] - need[a]);
@@ -740,30 +673,57 @@
       <td><span class="risk-badge ${p.estado}">${p.estadoLabel}</span></td>
     </tr>`).join('');
 
-  /* ---------- Detalle por puesto (Servicio -> Puesto -> Necesidad / Cubierto / En proceso / Remanente) ---------- */
-  const puestoData = [
-    {"Servicio":"Almacén","Puesto":"Auxiliar de Almacén","Suma":32,"Cubierto":2,"EnProceso":6},
-    {"Servicio":"Almacén","Puesto":"Trainee","Suma":0,"Cubierto":0,"EnProceso":1,"nota":"sin necesidad PP registrada"},
-    {"Servicio":"Mantenimiento","Puesto":"Mecánico","Suma":14,"Cubierto":0,"EnProceso":3},
-    {"Servicio":"Mantenimiento","Puesto":"Instrumentista","Suma":12,"Cubierto":0,"EnProceso":6},
-    {"Servicio":"Mantenimiento","Puesto":"Electricista","Suma":8,"Cubierto":0,"EnProceso":3},
-    {"Servicio":"Mantenimiento","Puesto":"Generación","Suma":5,"Cubierto":0,"EnProceso":4},
-    {"Servicio":"Mantenimiento","Puesto":"Well Service","Suma":5,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Mantenimiento","Puesto":"Auxiliar de Mantenimiento","Suma":4,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Mantenimiento","Puesto":"Compresión","Suma":4,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Mantenimiento","Puesto":"Instrumentación / Mecánica","Suma":0,"Cubierto":0,"EnProceso":1,"nota":"combo · podría cubrir Instrumentista o Mecánico"},
-    {"Servicio":"Planta","Puesto":"Operador de Planta","Suma":22,"Cubierto":0,"EnProceso":2},
-    {"Servicio":"Planta","Puesto":"Descargadero","Suma":6,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Planta","Puesto":"Tareas Generales","Suma":4,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Producción","Puesto":"Well Service","Suma":19,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Producción","Puesto":"Operador de Campo","Suma":12,"Cubierto":2,"EnProceso":6},
-    {"Servicio":"Producción","Puesto":"Almacenamiento de Agua","Suma":4,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"Serge","Puesto":"Mecánico de Flota","Suma":4,"Cubierto":0,"EnProceso":5},
-    {"Servicio":"Serge","Puesto":"Tareas Generales","Suma":3,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"TLM","Puesto":"Operador TLM","Suma":12,"Cubierto":2,"EnProceso":2},
-    {"Servicio":"TLM","Puesto":"Mantenimiento TLM","Suma":4,"Cubierto":0,"EnProceso":0},
-    {"Servicio":"TLM","Puesto":"CDA / TLM","Suma":0,"Cubierto":0,"EnProceso":6,"nota":"especialidad a confirmar con línea"},
+  /* ---------- Detalle por puesto (Servicio -> Puesto -> Necesidad / Cubierto / En proceso / Remanente) ----------
+     NECESIDAD_PUESTO es estático (viene del Resumen de Ingresos 26-27, no cambia al importar un CSV nuevo).
+     Cubierto/EnProceso se recalculan siempre a partir de `candidatos` — ver computePuestoData(). */
+  const NECESIDAD_PUESTO = [
+    {"Servicio":"Almacén","Puesto":"Auxiliar de Almacén","Suma":32},
+    {"Servicio":"Almacén","Puesto":"Trainee","Suma":0,"nota":"sin necesidad PP registrada"},
+    {"Servicio":"Mantenimiento","Puesto":"Mecánico","Suma":14},
+    {"Servicio":"Mantenimiento","Puesto":"Instrumentista","Suma":12},
+    {"Servicio":"Mantenimiento","Puesto":"Electricista","Suma":8},
+    {"Servicio":"Mantenimiento","Puesto":"Generación","Suma":5},
+    {"Servicio":"Mantenimiento","Puesto":"Well Service","Suma":5},
+    {"Servicio":"Mantenimiento","Puesto":"Auxiliar de Mantenimiento","Suma":4},
+    {"Servicio":"Mantenimiento","Puesto":"Compresión","Suma":4},
+    {"Servicio":"Mantenimiento","Puesto":"Instrumentación / Mecánica","Suma":0,"nota":"combo · podría cubrir Instrumentista o Mecánico"},
+    {"Servicio":"Planta","Puesto":"Operador de Planta","Suma":22},
+    {"Servicio":"Planta","Puesto":"Descargadero","Suma":6},
+    {"Servicio":"Planta","Puesto":"Tareas Generales","Suma":4},
+    {"Servicio":"Producción","Puesto":"Well Service","Suma":19},
+    {"Servicio":"Producción","Puesto":"Operador de Campo","Suma":12},
+    {"Servicio":"Producción","Puesto":"Almacenamiento de Agua","Suma":4},
+    {"Servicio":"Serge","Puesto":"Mecánico de Flota","Suma":4},
+    {"Servicio":"Serge","Puesto":"Tareas Generales","Suma":3},
+    {"Servicio":"TLM","Puesto":"Operador TLM","Suma":12},
+    {"Servicio":"TLM","Puesto":"Mantenimiento TLM","Suma":4},
+    {"Servicio":"TLM","Puesto":"CDA / TLM","Suma":0,"nota":"especialidad a confirmar con línea"},
   ];
+  const NECESIDAD_SERVICIO = { Mantenimiento: 52, 'Producción': 35, Almacén: 32, Planta: 32, TLM: 16, Serge: 7 };
+  const NECESIDAD_TOTAL_PP = 174;
+  let puestoData = [];
+
+  function computePuestoData(cands) {
+    const agg = {};
+    cands.forEach(c => {
+      const key = c.servicio + '|||' + c.puesto;
+      if (!agg[key]) agg[key] = { cub: 0, proc: 0 };
+      if (c.s.ingreso) agg[key].cub++;
+      else if (!c.cancelado) agg[key].proc++;
+    });
+    const rows = NECESIDAD_PUESTO.map(d => {
+      const key = d.Servicio + '|||' + d.Puesto;
+      const a = agg[key] || { cub: 0, proc: 0 };
+      delete agg[key];
+      return { ...d, Cubierto: a.cub, EnProceso: a.proc };
+    });
+    Object.keys(agg).forEach(key => {
+      const [Servicio, Puesto] = key.split('|||');
+      rows.push({ Servicio, Puesto, Suma: 0, Cubierto: agg[key].cub, EnProceso: agg[key].proc, nota: 'sin necesidad PP registrada — puesto nuevo en el CSV importado' });
+    });
+    return rows;
+  }
+
   const svcBadgeColor = {
     Almacén: 'var(--series-alm)', Mantenimiento: 'var(--series-mant)', Planta: 'var(--series-planta)',
     'Producción': 'var(--series-prod)', Serge: 'var(--series-serge)', TLM: 'var(--series-tlm)'
@@ -773,16 +733,19 @@
   const puestoBodyEl = document.getElementById('puestoTableBody');
   const puestoServices = ['Todos', ...Object.keys(svcBadgeColor)];
 
-  puestoServices.forEach(s => {
-    const count = s === 'Todos' ? puestoData.length : puestoData.filter(d => d.Servicio === s).length;
-    const pill = document.createElement('button');
-    pill.type = 'button';
-    pill.className = 'month-pill';
-    pill.dataset.svc = s;
-    pill.innerHTML = s + ' <span class="n">(' + count + ')</span>';
-    pill.addEventListener('click', () => renderPuestoTable(s));
-    puestoFilterEl.appendChild(pill);
-  });
+  function buildPuestoFilterPills() {
+    puestoFilterEl.innerHTML = '';
+    puestoServices.forEach(s => {
+      const count = s === 'Todos' ? puestoData.length : puestoData.filter(d => d.Servicio === s).length;
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'month-pill';
+      pill.dataset.svc = s;
+      pill.innerHTML = s + ' <span class="n">(' + count + ')</span>';
+      pill.addEventListener('click', () => renderPuestoTable(s));
+      puestoFilterEl.appendChild(pill);
+    });
+  }
 
   function renderPuestoTable(svc) {
     [...puestoFilterEl.children].forEach(p => p.classList.toggle('active', p.dataset.svc === svc));
@@ -809,8 +772,6 @@
         </tr>`;
     }).join('');
   }
-
-  renderPuestoTable('Todos');
 
   /* ---------- Seguimiento operativo (planilla Gerencia de Producción) ---------- */
   const sectorStatus = [
@@ -858,7 +819,7 @@
 
 
   /* ---------- Embudo y motivos de baja — filtrables por Servicio / Vacante a considerar / Procedencia ---------- */
-  const candidatos = [{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No avanza (definido por línea)","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":false,"s":{"aprobado":1,"entrevista":1,"examen":1,"clinica":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":true,"motivo":"No se presentó a examen preocupacional","s":{}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Trainee","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentación / Mecánica","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"Rechaza Propuesta","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"Secundario incompleto","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1,"examen":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1,"aprobado":1}}];
+  let candidatos = [{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No avanza (definido por línea)","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Consultora","cancelado":true,"motivo":"No Califica en Entrevista","s":{}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Postulación","cancelado":false,"s":{"aprobado":1,"entrevista":1,"examen":1,"clinica":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":true,"motivo":"No se presentó a examen preocupacional","s":{}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Trainee","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Electricista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Generación","procedencia":"Línea","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":false,"s":{"aprobado":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentación / Mecánica","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Mecánico","procedencia":"Consultora","cancelado":false,"s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Consultora","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Auxiliar de Mantenimiento","procedencia":"Sindicato","cancelado":true,"motivo":"CV Rechazado por Línea","s":{}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":true,"motivo":"Rechaza Propuesta","s":{"aprobado":1,"entrevista":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Serge","puesto":"Mecánico de Flota","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Planta","puesto":"Operador de Planta","procedencia":"Consultora","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"Producción","puesto":"Operador de Campo","procedencia":"Consultora / Sindicato","cancelado":false,"s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"examen":1,"clinica":1,"aptitud":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"Secundario incompleto","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":true,"motivo":"No Califica (genérico)","s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"CDA / TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Línea","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"TLM","puesto":"Operador TLM","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"examen":1,"clinica":1,"aptitud":1,"ingreso":1}},{"servicio":"Almacén","puesto":"Auxiliar de Almacén","procedencia":"Sindicato","cancelado":false,"s":{"cv":1,"enviado":1,"aprobado":1,"entrevista":1,"examen":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1}},{"servicio":"Mantenimiento","puesto":"Instrumentista","procedencia":"Línea","cancelado":false,"s":{"cv":1,"aprobado":1}}];
 
   const SERVICIO_ORDER = ['Mantenimiento', 'Producción', 'Almacén', 'Planta', 'TLM', 'Serge'];
   const PROCEDENCIA_ORDER = ['Sindicato', 'Consultora', 'Consultora / Sindicato', 'Postulación', 'Línea'];
@@ -997,6 +958,305 @@
   motivoPuestoEl.addEventListener('change', renderMotivos);
   motivoProcedenciaEl.addEventListener('change', renderMotivos);
   renderMotivos();
+
+  /* ---------- KPIs / callout / cobertura / cancelados — recalculados a partir de `candidatos` ---------- */
+  function renderKPIs(cands) {
+    const total = cands.length;
+    const enProceso = cands.filter(c => !c.cancelado && !c.s.ingreso).length;
+    const cancelados = cands.filter(c => c.cancelado).length;
+    const cubierto = cands.filter(c => c.s.ingreso).length;
+    const remanente = Math.max(NECESIDAD_TOTAL_PP - cubierto, 0);
+    const coberturaPct = NECESIDAD_TOTAL_PP > 0 ? Math.round(((cubierto + enProceso) / NECESIDAD_TOTAL_PP) * 100) : 0;
+    const cubiertoPct = NECESIDAD_TOTAL_PP > 0 ? Math.round((cubierto / NECESIDAD_TOTAL_PP) * 1000) / 10 : 0;
+
+    document.getElementById('kpiPipeline').textContent = total;
+    document.getElementById('kpiEnProceso').textContent = enProceso;
+    document.getElementById('kpiEnProcesoSub').textContent = `${total ? Math.round(enProceso / total * 100) : 0}% del pipeline`;
+    document.getElementById('kpiCancelados').textContent = cancelados;
+    document.getElementById('kpiCanceladosSub').textContent = `${total ? Math.round(cancelados / total * 100) : 0}% del pipeline`;
+    document.getElementById('kpiCubierto').textContent = cubierto;
+    document.getElementById('kpiCubiertoSub').textContent = `${cubiertoPct}% de la necesidad PP`;
+    document.getElementById('kpiRemanente').textContent = remanente;
+    document.getElementById('kpiRemanenteSub').textContent = `de ${NECESIDAD_TOTAL_PP} puestos PP totales`;
+    document.getElementById('kpiCobertura').textContent = `${coberturaPct}%`;
+
+    return { total, enProceso, cancelados, cubierto, remanente, coberturaPct, cubiertoPct };
+  }
+
+  function renderCallout(kpis, cands) {
+    const byServicioCancel = {};
+    cands.filter(c => c.cancelado).forEach(c => { byServicioCancel[c.servicio] = (byServicioCancel[c.servicio] || 0) + 1; });
+    const topServicios = Object.entries(byServicioCancel).sort((a, b) => b[1] - a[1]).slice(0, 2).map(e => e[0]);
+    const concentracionTxt = topServicios.length ? topServicios.join(' y ') : 'ningún servicio en particular';
+    const cancelPct = kpis.total ? Math.round(kpis.cancelados / kpis.total * 100) : 0;
+    document.getElementById('calloutText').innerHTML =
+      `de los ${NECESIDAD_TOTAL_PP} puestos PP requeridos hasta jun-27, solo ${kpis.cubierto} están efectivamente cubiertos (${kpis.cubiertoPct}%) — el resto del ${kpis.coberturaPct}% de cobertura proyectada todavía es pipeline en proceso, no gente trabajando. La cancelación es del ${cancelPct}% en este corte, concentrada en ${concentracionTxt}. La mayor concentración de demanda cae en <b>octubre y noviembre 2026</b> (107 puestos combinados) y en <b>enero 2027</b> (35 puestos) — ver el plan de cobertura mensual más abajo para el detalle de ventana de sourcing.`;
+  }
+
+  function renderCoverage(cands) {
+    const agg = {};
+    cands.forEach(c => {
+      if (!agg[c.servicio]) agg[c.servicio] = { cub: 0, proc: 0 };
+      if (c.s.ingreso) agg[c.servicio].cub++;
+      else if (!c.cancelado) agg[c.servicio].proc++;
+    });
+    const allServicios = [...new Set([...SERVICIO_ORDER, ...Object.keys(agg)])];
+    const rows = allServicios.map(s => ({
+      servicio: s,
+      cub: (agg[s] || {}).cub || 0,
+      proc: (agg[s] || {}).proc || 0,
+      nec: NECESIDAD_SERVICIO[s] || 0,
+    })).sort((a, b) => (b.cub + b.proc) - (a.cub + a.proc));
+
+    document.getElementById('covList').innerHTML = rows.map(r => {
+      const nec = r.nec || Math.max(r.cub + r.proc, 1);
+      const pctCub = Math.min((r.cub / nec) * 100, 100);
+      const pctProc = Math.min((r.proc / nec) * 100, 100 - pctCub);
+      return `
+      <div class="cov-row">
+        <div class="cov-name">${r.servicio}</div>
+        <div class="cov-track"><div class="cov-fill" style="width:${pctCub}%;background:var(--brand-green-dk);" title="Cubierto: ${r.cub}"></div><div class="cov-fill" style="width:${pctProc}%;background:var(--brand-lime);" title="En proceso: ${r.proc}"></div></div>
+        <div class="cov-nums"><b>${r.cub}</b> cubiertos · <b>${r.proc}</b> en proceso · sobre ${r.nec || 'n/a'} necesidad</div>
+      </div>`;
+    }).join('');
+
+    const activos = cands.filter(c => !c.cancelado).length;
+    const ingresados = cands.filter(c => c.s.ingreso).length;
+    const enProc = activos - ingresados;
+    document.getElementById('covHint').textContent = `Base: ${activos} candidatos activos de la planilla PP actual (${ingresados} ingresados, ${enProc} en proceso) sobre la necesidad total PP (Resumen de Ingresos 26-27, sin cambios).`;
+  }
+
+  function renderCancelados(cands) {
+    const total = cands.length;
+    const cancelados = cands.filter(c => c.cancelado);
+    const pct = total ? Math.round(cancelados.length / total * 100) : 0;
+    document.getElementById('canceladosSub').textContent = `${cancelados.length} candidato${cancelados.length === 1 ? '' : 's'} cancelado${cancelados.length === 1 ? '' : 's'} sobre ${total} totales (${pct}%).`;
+
+    function hbarBlock(elId, keyFn) {
+      const counts = {};
+      cancelados.forEach(c => { const k = keyFn(c); counts[k] = (counts[k] || 0) + 1; });
+      const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const el = document.getElementById(elId);
+      if (!rows.length) { el.innerHTML = `<div class="dim-filters-empty">Sin cancelados registrados.</div>`; return; }
+      const max = rows[0][1];
+      el.innerHTML = rows.map(([name, val]) => `
+      <div class="hbar-row">
+        <div class="hbar-name">${name}</div>
+        <div class="hbar-track"><div class="hbar-fill" style="width:${Math.round(val / max * 100)}%;background:var(--status-critical);"></div></div>
+        <div class="hbar-val">${val}</div>
+      </div>`).join('');
+    }
+    hbarBlock('canceladosPorProcedencia', c => c.procedencia);
+    hbarBlock('canceladosPorServicio', c => c.servicio);
+
+    const bySvc = {};
+    cancelados.forEach(c => { bySvc[c.servicio] = (bySvc[c.servicio] || 0) + 1; });
+    const top = Object.entries(bySvc).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('canceladosFoco').innerHTML = top
+      ? `<b>Foco de atención:</b> ${top[0]} concentra la mayor cantidad de bajas (${top[1]} de ${cancelados.length}).`
+      : `<b>Foco de atención:</b> sin cancelados registrados en este corte.`;
+  }
+
+  /* ---------- Importar CSV: parser + normalización + orquestación ---------- */
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, '');
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], next = text[i + 1];
+      if (inQuotes) {
+        if (ch === '"' && next === '"') { field += '"'; i++; }
+        else if (ch === '"') { inQuotes = false; }
+        else { field += ch; }
+      } else {
+        if (ch === '"') { inQuotes = true; }
+        else if (ch === ',') { row.push(field); field = ''; }
+        else if (ch === '\r') { /* skip */ }
+        else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+        else { field += ch; }
+      }
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    if (!rows.length) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1).filter(r => r.some(v => v && v.trim())).map(r => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = (r[i] || '').trim(); });
+      return obj;
+    });
+  }
+
+  function normalizeProcedencia(p) {
+    if (!p) return 'Sin dato';
+    const t = p.trim();
+    if (/^l[ií]nea$/i.test(t) || /^genera/i.test(t)) return 'Línea';
+    if (/consultora.*sindicato|sindicato.*consultora/i.test(t)) return 'Consultora / Sindicato';
+    if (/sindicato/i.test(t)) return 'Sindicato';
+    if (/consultora/i.test(t)) return 'Consultora';
+    if (/postulaci[oó]n/i.test(t)) return 'Postulación';
+    return t;
+  }
+
+  function stripAccents(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function normalizePuesto(servicio, vac) {
+    const v = stripAccents((vac || '').toLowerCase());
+    const has = (...words) => words.some(w => v.includes(stripAccents(w)));
+    if (servicio === 'Almacén') {
+      if (has('trainee')) return 'Trainee';
+      return 'Auxiliar de Almacén';
+    }
+    if (servicio === 'Mantenimiento') {
+      if (has('electric')) return 'Electricista';
+      if (has('instrumentaci', 'instrumentación / mec', 'instrumentacion / mec')) return 'Instrumentación / Mecánica';
+      if (has('instrument')) return 'Instrumentista';
+      if (has('mec')) return 'Mecánico';
+      if (has('generaci')) return 'Generación';
+      if (has('well service')) return 'Well Service';
+      if (has('compres')) return 'Compresión';
+      if (has('auxiliar')) return 'Auxiliar de Mantenimiento';
+      return (vac || '').trim() || 'Sin especificar';
+    }
+    if (servicio === 'Planta') {
+      if (has('descargadero')) return 'Descargadero';
+      if (has('tareas general')) return 'Tareas Generales';
+      return 'Operador de Planta';
+    }
+    if (servicio === 'Producción') {
+      if (has('well service')) return 'Well Service';
+      if (has('almacenamiento de agua', 'agua')) return 'Almacenamiento de Agua';
+      return 'Operador de Campo';
+    }
+    if (servicio === 'Serge') {
+      if (has('tareas general')) return 'Tareas Generales';
+      return 'Mecánico de Flota';
+    }
+    if (servicio === 'TLM') {
+      if (has('mantenimiento tlm')) return 'Mantenimiento TLM';
+      if (has('cda')) return 'CDA / TLM';
+      return 'Operador TLM';
+    }
+    return (vac || '').trim() || 'Sin especificar';
+  }
+
+  function normalizeMotivo(m) {
+    if (!m) return null;
+    const t = m.trim();
+    if (!t) return null;
+    if (/^confinados?$/i.test(t)) return null;
+    return t;
+  }
+
+  function isCompleteVal(col, v) {
+    if (!v || !v.trim()) return false;
+    if (col === 'okrrll' || col === 'enviado') {
+      return /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(v);
+    }
+    return true;
+  }
+
+  function buildCandidatosFromRows(objRows) {
+    const colMap = {
+      cv: 'CV Recibido', enviado: 'Enviado a Linea', aprobado: 'Aprobado para entrevista',
+      entrevista: 'Entrevista', okrrll: 'OK de RRLL', examen: 'Examen Médico',
+      clinica: 'Clínica', aptitud: 'Aptitud', ingreso: 'Fecha de Ingreso',
+    };
+    return objRows.map(r => {
+      const servicio = (r['Servicio'] || '').trim();
+      const vac = r['Vacante a Considerar'] || r['Vacante a considerar'] || '';
+      const puesto = normalizePuesto(servicio, vac);
+      const procedencia = normalizeProcedencia(r['Procedencia']);
+      const canceladoRaw = (r['Cancelado'] || '').trim();
+      // La columna "Cancelado" guarda un valor (fecha, "x", etc.) cuando el candidato fue dado de baja y queda vacía en caso contrario.
+      const cancelado = canceladoRaw.length > 0;
+      const motivo = cancelado ? normalizeMotivo(r['Motivo de Baja']) : null;
+      const s = {};
+      Object.keys(colMap).forEach(key => {
+        if (isCompleteVal(key, r[colMap[key]])) s[key] = 1;
+      });
+      const cand = { servicio: servicio || 'Sin dato', puesto, procedencia, cancelado, s };
+      if (motivo) cand.motivo = motivo;
+      return cand;
+    }).filter(c => c.servicio && c.servicio !== 'Sin dato');
+  }
+
+  function computeInProceso(cands) {
+    const out = {};
+    cands.forEach(c => { if (!c.cancelado) out[c.servicio] = (out[c.servicio] || 0) + 1; });
+    return out;
+  }
+
+  function recomputeAll(newCandidatos) {
+    candidatos = newCandidatos;
+    puestoData = computePuestoData(candidatos);
+    buildPuestoFilterPills();
+    renderPuestoTable('Todos');
+
+    inProceso = computeInProceso(candidatos);
+    renderMonth(currentMonth);
+
+    const kpis = renderKPIs(candidatos);
+    renderCallout(kpis, candidatos);
+    renderCoverage(candidatos);
+    renderCancelados(candidatos);
+
+    fillSelect(funnelServicioEl, SERVICIO_ORDER, 'Todos los servicios');
+    fillSelect(funnelPuestoEl, puestosForServicio(''), 'Todas las vacantes');
+    fillSelect(funnelProcedenciaEl, PROCEDENCIA_ORDER, 'Todas las procedencias');
+    renderFunnel();
+
+    fillSelect(motivoServicioEl, SERVICIO_ORDER, 'Todos los servicios');
+    fillSelect(motivoPuestoEl, puestosForServicio(''), 'Todas las vacantes');
+    fillSelect(motivoProcedenciaEl, PROCEDENCIA_ORDER, 'Todas las procedencias');
+    renderMotivos();
+  }
+
+  const importBtnEl = document.getElementById('importBtn');
+  const csvInputEl = document.getElementById('csvInput');
+  const importStatusEl = document.getElementById('importStatus');
+
+  importBtnEl.addEventListener('click', () => csvInputEl.click());
+  csvInputEl.addEventListener('change', (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = parseCSV(String(reader.result));
+        if (!rows.length) throw new Error('El archivo no tiene filas de datos.');
+        const nuevos = buildCandidatosFromRows(rows);
+        if (!nuevos.length) throw new Error('No se pudo reconocer ningún candidato — revisá que las columnas coincidan con la planilla PP (Servicio, Vacante a Considerar, Procedencia, etc.).');
+        recomputeAll(nuevos);
+        const hoy = new Date();
+        const fechaTxt = String(hoy.getDate()).padStart(2, '0') + '/' + String(hoy.getMonth() + 1).padStart(2, '0') + '/' + hoy.getFullYear();
+        document.getElementById('corteFecha').textContent = `Corte al ${fechaTxt}`;
+        document.getElementById('fuenteTexto').textContent = `Seguimiento de ingresos PP · actualizado desde ${file.name}`;
+        importStatusEl.style.display = 'block';
+        importStatusEl.style.background = 'rgba(4,95,56,0.12)';
+        importStatusEl.style.color = 'var(--brand-green-dk)';
+        importStatusEl.textContent = `✅ Datos actualizados desde "${file.name}": ${nuevos.length} candidatos cargados. Los KPIs, cobertura, embudo y motivos de baja ya reflejan este archivo. La necesidad por puesto/servicio/mes y el plan de cobertura siguen viniendo del Resumen de Ingresos 26-27 (no cambian con este import).`;
+      } catch (err) {
+        importStatusEl.style.display = 'block';
+        importStatusEl.style.background = 'rgba(208,59,59,0.12)';
+        importStatusEl.style.color = 'var(--status-critical)';
+        importStatusEl.textContent = `⚠️ No se pudo importar el archivo: ${err.message}`;
+      } finally {
+        csvInputEl.value = '';
+      }
+    };
+    reader.onerror = () => {
+      importStatusEl.style.display = 'block';
+      importStatusEl.style.background = 'rgba(208,59,59,0.12)';
+      importStatusEl.style.color = 'var(--status-critical)';
+      importStatusEl.textContent = '⚠️ No se pudo leer el archivo.';
+    };
+    reader.readAsText(file, 'UTF-8');
+  });
+
+  /* Primer render: usa la misma canalización que el import para que el estado inicial y el post-import coincidan siempre. */
+  recomputeAll(candidatos);
 
 </script>
 
