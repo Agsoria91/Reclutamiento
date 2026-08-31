@@ -29,7 +29,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     --surface-1:#fcfcfb; --surface-2:#ffffff; --page-plane:#f4f7f5;
     --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
     --grid-line:#e6e5e0; --border:rgba(11,11,11,0.08); --header-line:rgba(11,11,11,0.14);
-    --brand-green:#045f38; --row-alt:rgba(11,11,11,0.018); --brand-navy:#1c3a5e;
+    --brand-green:#045f38; --row-alt:rgba(11,11,11,0.018); --brand-navy:#1c3a5e; --brand-plum:#6a3f7a;
     --warn-bg:#fdf3e7; --warn-text:#8a5a12; --ok-bg:#e9f6ee; --ok-text:#045f38;
     --err-bg:#fbeceb; --err-text:#a3312b;
   }
@@ -85,6 +85,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   .pill{border:1px solid var(--border);background:var(--surface-2);color:var(--text-secondary);border-radius:20px;padding:7px 15px;font-size:12.5px;font-weight:600;cursor:pointer;user-select:none;}
   .pill.active{background:var(--brand-green);border-color:var(--brand-green);color:#fff;}
   .pill.area.active{background:var(--brand-navy);border-color:var(--brand-navy);}
+  .pill.proc.active{background:var(--brand-plum);border-color:var(--brand-plum);}
   .filter-divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
 
   .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:10px;}
@@ -181,6 +182,10 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     <div class="filter-label">Sector</div>
     <div class="filters" id="filters"></div>
   </div>
+  <div class="filter-block">
+    <div class="filter-label">Procedencia</div>
+    <div class="filters" id="procFilters"></div>
+  </div>
   <hr class="filter-divider">
 
   <div class="kpi-grid" id="kpiGrid"></div>
@@ -266,8 +271,14 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   const ORIGEN_COLOR = '#2a5f8f';
   const MOTIVO_COLOR = '#c1443f';
 
+  const PROC_ORDER = ['Consultora', 'Línea', 'Sindicato', 'Lista Pecom', 'Postulación', 'Mixto (Consultora/Sindicato)', 'Otro'];
+  function procLabel(c) {
+    return PROC_MAP[c.procedencia] || (c.procedencia || 'Sin dato');
+  }
+
   let areaActivo = 'LT2E';
   let sectorActivo = 'Todos';
+  let procedenciaActivo = 'Todas';
 
   function orderPreferred(items, preferred) {
     const set = Array.from(new Set(items));
@@ -291,7 +302,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const opts = ['Todas', ...areasPresentesFn()];
     areaFiltersEl.innerHTML = opts.map(a => `<div class="pill area ${a===areaActivo?'active':''}" data-area="${a}">${a==='Todas'?'Todas':(AREA_LABEL[a]||a)}</div>`).join('');
     areaFiltersEl.querySelectorAll('.pill').forEach(el => {
-      el.addEventListener('click', () => { areaActivo = el.dataset.area; sectorActivo = 'Todos'; render(); });
+      el.addEventListener('click', () => { areaActivo = el.dataset.area; sectorActivo = 'Todos'; procedenciaActivo = 'Todas'; render(); });
     });
   }
 
@@ -300,7 +311,16 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const opts = ['Todos', ...sectoresPresentes];
     filtersEl.innerHTML = opts.map(s => `<div class="pill ${s===sectorActivo?'active':''}" data-sector="${s}">${s}</div>`).join('');
     filtersEl.querySelectorAll('.pill').forEach(el => {
-      el.addEventListener('click', () => { sectorActivo = el.dataset.sector; render(); });
+      el.addEventListener('click', () => { sectorActivo = el.dataset.sector; procedenciaActivo = 'Todas'; render(); });
+    });
+  }
+
+  const procFiltersEl = document.getElementById('procFilters');
+  function renderProcFilters(procedenciasPresentes) {
+    const opts = ['Todas', ...procedenciasPresentes];
+    procFiltersEl.innerHTML = opts.map(p => `<div class="pill proc ${p===procedenciaActivo?'active':''}" data-proc="${p}">${p}</div>`).join('');
+    procFiltersEl.querySelectorAll('.pill').forEach(el => {
+      el.addEventListener('click', () => { procedenciaActivo = el.dataset.proc; render(); });
     });
   }
 
@@ -332,7 +352,12 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const sectoresPresentes = SECTOR_ORDER_ALL.filter(s => enArea.some(c => c.sector === s));
     renderFilters(sectoresPresentes);
 
-    const filtrados = sectorActivo === 'Todos' ? enArea : enArea.filter(c => c.sector === sectorActivo);
+    const enSector = sectorActivo === 'Todos' ? enArea : enArea.filter(c => c.sector === sectorActivo);
+
+    const procedenciasPresentes = orderPreferred(enSector.map(procLabel), PROC_ORDER);
+    renderProcFilters(procedenciasPresentes);
+
+    const filtrados = procedenciaActivo === 'Todas' ? enSector : enSector.filter(c => procLabel(c) === procedenciaActivo);
 
     const kpiEl = document.getElementById('kpiGrid');
     kpiEl.innerHTML = KPI_STAGES.map(s => `
@@ -358,8 +383,9 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       <span><b>${pedidasOct}</b> posiciones pedidas en oct-26</span>
     `;
 
+    const procSuffix = procedenciaActivo === 'Todas' ? '' : ` · Procedencia: ${procedenciaActivo}`;
     document.getElementById('tableTitle').textContent = sectorActivo === 'Todos' ? 'Puestos — todos los sectores' : `Puestos — ${sectorActivo}`;
-    document.getElementById('tableSub').textContent = `${totalCandidatos} candidatos en ${areaLabel}`;
+    document.getElementById('tableSub').textContent = `${totalCandidatos} candidatos en ${areaLabel}${procSuffix}`;
 
     const porPuesto = {};
     filtrados.forEach(c => {
@@ -431,7 +457,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       origenCounts[key] = (origenCounts[key] || 0) + 1;
     });
     const origenItems = Object.entries(origenCounts).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
-    document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${sectorActivo==='Todos'?'':' — '+sectorActivo}`;
+    document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}`;
     document.getElementById('origenBars').innerHTML = origenItems.length ? barRows(origenItems, ORIGEN_COLOR) : '<div class="empty-note">Sin candidatos en este filtro.</div>';
 
     // ---- Motivos de baja ----
@@ -446,7 +472,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       cancGroup[key] = (cancGroup[key] || 0) + 1;
     });
     const motivoItems = Object.entries(cancGroup).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
-    document.getElementById('motivoSub').textContent = `${cancelados} cancelados${sectorActivo==='Todos'?'':' — '+sectorActivo}`;
+    document.getElementById('motivoSub').textContent = `${cancelados} cancelados${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}`;
     document.getElementById('motivoBars').innerHTML = motivoItems.length ? barRows(motivoItems, MOTIVO_COLOR) : '<div class="empty-note">Sin cancelados en este filtro.</div>';
   }
 
@@ -582,6 +608,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     lastUpdateNote = null;
     areaActivo = 'LT2E';
     sectorActivo = 'Todos';
+    procedenciaActivo = 'Todas';
     showStatus('Se restauraron los datos originales del informe.', 'ok');
     render();
   });
@@ -623,6 +650,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
 
     areaActivo = 'LT2E';
     sectorActivo = 'Todos';
+    procedenciaActivo = 'Todas';
 
     let msg = `Datos actualizados desde ${files.map(f=>f.name).join(', ')}: ${partes.join(' y ')}.`;
     let kind = 'ok';
