@@ -115,13 +115,14 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   .card-grid .card{margin-bottom:0;}
 
-  table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  thead th{text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);font-weight:700;padding:9px 10px;border-bottom:2px solid var(--header-line);}
-  thead th:first-child{text-align:left;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed;}
+  thead th{text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--text-muted);font-weight:700;padding:9px 8px;border-bottom:2px solid var(--header-line);word-break:break-word;}
+  thead th:first-child{text-align:left;width:19%;}
+  thead th.total-col{width:9%;}
   tbody tr:nth-child(even){background:var(--row-alt);}
-  tbody td{padding:9px 10px;border-bottom:1px solid var(--grid-line);text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;}
+  tbody td{padding:9px 8px;border-bottom:1px solid var(--grid-line);text-align:right;font-variant-numeric:tabular-nums;vertical-align:middle;}
   tbody tr:last-child td{border-bottom:1px solid var(--header-line);}
-  td.puesto-name{text-align:left;font-weight:600;}
+  td.puesto-name{text-align:left;font-weight:600;overflow-wrap:break-word;}
   td.puesto-name .sec-tag{display:inline-block;font-size:9.5px;font-weight:700;color:#fff;padding:2px 8px;border-radius:10px;margin-right:8px;vertical-align:middle;}
   td.total-col{font-weight:800;color:var(--text-primary);}
   td.zero{color:var(--text-muted);}
