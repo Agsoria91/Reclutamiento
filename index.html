@@ -32,6 +32,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     --brand-green:#045f38; --row-alt:rgba(11,11,11,0.018); --brand-navy:#1c3a5e; --brand-plum:#6a3f7a;
     --warn-bg:#fdf3e7; --warn-text:#8a5a12; --ok-bg:#e9f6ee; --ok-text:#045f38;
     --err-bg:#fbeceb; --err-text:#a3312b;
+    --cat-1:#2a78d6; --cat-2:#eb6834; --cat-3:#1baf7a; --cat-4:#eda100;
+    --cat-5:#e87ba4; --cat-6:#008300; --cat-7:#4a3aa7; --cat-8:#e34948;
   }
   [data-theme="dark"]{
     color-scheme: dark;
@@ -41,6 +43,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     --row-alt:rgba(255,255,255,0.025);
     --warn-bg:#332711; --warn-text:#e4b56a; --ok-bg:#122b1e; --ok-text:#5fcf93;
     --err-bg:#301918; --err-text:#f0918c;
+    --cat-1:#3987e5; --cat-2:#d95926; --cat-3:#199e70; --cat-4:#c98500;
+    --cat-5:#d55181; --cat-6:#008300; --cat-7:#9085e9; --cat-8:#e66767;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -51,6 +55,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       --row-alt:rgba(255,255,255,0.025);
       --warn-bg:#332711; --warn-text:#e4b56a; --ok-bg:#122b1e; --ok-text:#5fcf93;
       --err-bg:#301918; --err-text:#f0918c;
+      --cat-1:#3987e5; --cat-2:#d95926; --cat-3:#199e70; --cat-4:#c98500;
+      --cat-5:#d55181; --cat-6:#008300; --cat-7:#9085e9; --cat-8:#e66767;
     }
   }
   *{box-sizing:border-box;}
@@ -170,6 +176,18 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   .simple-bar-num{font-size:12.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
   .empty-note{font-size:12px;color:var(--text-muted);font-style:italic;}
 
+  .donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+  .donut{width:132px;height:132px;border-radius:50%;flex:0 0 auto;position:relative;}
+  .donut-hole{position:absolute;inset:20px;border-radius:50%;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .donut-hole .n{font-size:19px;font-weight:800;color:var(--text-primary);line-height:1.1;}
+  .donut-hole .lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+  .donut-legend{flex:1 1 180px;min-width:150px;display:flex;flex-direction:column;gap:7px;}
+  .donut-legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);}
+  .donut-legend-row .sw{flex:0 0 auto;width:10px;height:10px;border-radius:3px;}
+  .donut-legend-row .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .donut-legend-row .pct{flex:0 0 auto;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums;}
+  .donut-legend-row .cnt{flex:0 0 auto;color:var(--text-muted);font-variant-numeric:tabular-nums;width:26px;text-align:right;}
+
   footer{margin-top:22px;font-size:11px;color:var(--text-muted);text-align:center;}
 
   @media (max-width:900px){
@@ -179,6 +197,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     .kpi-grid{grid-template-columns:repeat(2,1fr);}
     .card-grid{grid-template-columns:1fr;}
     .bar-row{grid-template-columns:120px 1fr 60px;}
+    .donut-wrap{flex-direction:column;align-items:flex-start;}
   }
 </style>
 </head>
@@ -317,7 +336,10 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         <div class="card">
           <h3>Origen de los candidatos</h3>
           <div class="card-sub" id="origenSub"></div>
-          <div id="origenBars"></div>
+          <div class="donut-wrap">
+            <div class="donut" id="origenDonut"><div class="donut-hole"><div class="n" id="origenDonutTotal">0</div><div class="lbl">candidatos</div></div></div>
+            <div class="donut-legend" id="origenLegend"></div>
+          </div>
         </div>
         <div class="card">
           <h3>Motivos de baja</h3>
@@ -380,6 +402,13 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   function procLabel(c) {
     return PROC_MAP[c.procedencia] || (c.procedencia || 'Sin dato');
   }
+  // Color fija por referente (identidad, no por ranking) — paleta categórica del design system.
+  const PROC_COLOR = {
+    'Consultora': 'var(--cat-1)', 'Línea': 'var(--cat-2)', 'Sindicato': 'var(--cat-3)',
+    'Lista Pecom': 'var(--cat-4)', 'Postulación': 'var(--cat-5)',
+    'Mixto (Consultora/Sindicato)': 'var(--cat-6)', 'Otro': 'var(--cat-7)',
+  };
+  function procColor(label) { return PROC_COLOR[label] || 'var(--text-muted)'; }
 
   function stripAccentsJS(s) {
     return (s || '').normalize('NFD').replace(new RegExp('[\u0300-\u036f]', 'g'), '');
@@ -826,7 +855,28 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     });
     const origenItems = Object.entries(origenCounts).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
     document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}`;
-    document.getElementById('origenBars').innerHTML = origenItems.length ? barRows(origenItems, ORIGEN_COLOR) : '<div class="empty-note">Sin candidatos en este filtro.</div>';
+    const origenTotal = origenItems.reduce((s,i) => s + i.value, 0);
+    document.getElementById('origenDonutTotal').textContent = origenTotal;
+    const donutEl = document.getElementById('origenDonut');
+    if (!origenTotal) {
+      donutEl.style.background = 'var(--grid-line)';
+    } else {
+      let acc = 0;
+      const stops = origenItems.map(it => {
+        const from = acc / origenTotal * 100;
+        acc += it.value;
+        const to = acc / origenTotal * 100;
+        return `${procColor(it.label)} ${from}% ${to}%`;
+      }).join(', ');
+      donutEl.style.background = `conic-gradient(${stops})`;
+    }
+    document.getElementById('origenLegend').innerHTML = origenItems.length ? origenItems.map(it => `
+      <div class="donut-legend-row">
+        <span class="sw" style="background:${procColor(it.label)}"></span>
+        <span class="nm">${it.label}</span>
+        <span class="pct">${(it.value / origenTotal * 100).toFixed(1)}%</span>
+        <span class="cnt">${it.value}</span>
+      </div>`).join('') : '<div class="empty-note">Sin candidatos en este filtro.</div>';
 
     // ---- Motivos de baja ----
     const cancGroup = {};
