@@ -877,7 +877,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   const STORAGE_KEY = 'efis_avance_resumen_data_v1';
   function saveToStorage() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ candidatos: CANDIDATOS, pedidas: PEDIDAS_MES, note: lastUpdateNote }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ candidatos: CANDIDATOS, pedidas: PEDIDAS_MES, movinterno: PEDIDAS_MOVINTERNO, note: lastUpdateNote }));
     } catch (e) { /* localStorage no disponible (modo privado, bloqueo del navegador, etc.) */ }
   }
   function clearStorage() {
@@ -891,6 +891,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       if (saved && saved.candidatos && saved.pedidas) {
         CANDIDATOS = saved.candidatos;
         PEDIDAS_MES = saved.pedidas;
+        if (saved.movinterno) PEDIDAS_MOVINTERNO = saved.movinterno;
         lastUpdateNote = saved.note || null;
         return true;
       }
@@ -988,13 +989,21 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
 
   const NO_BUCKET_SECTORS = ['Calidad', 'Facilidades', 'O&M', 'RRHH', 'RRLL', 'SAS'];
 
+  // Mismo patrón que MOV_INTERNO_RE en prep_data_v5.py — "N cubiertos con mov interno".
+  const MOV_INTERNO_RE_JS = /^\s*(\d+)\s*cubiertos?\s+con\s+mov\.?\s*interno/i;
+
   function parseResumenRows(rows) {
     const pedidas = {};
+    const movinterno = {};
     rows.forEach(r => {
       const division = norm(r['Division'] || r['Division ']);
       const servicioRaw = norm(r['Servicio']);
       const cuadrilla = norm(r['Cuadrilla']);
       if (!division || division === 'TOTAL') return;
+      // Solo puestos de planta permanente (Encuadre = PP) — PJ y FC no forman parte de la
+      // necesidad de este tablero por ahora, igual que en los datos base.
+      const encuadre = norm(r['Encuadre']);
+      if (encuadre !== 'PP') return;
       let area, sector;
       if (division === 'TLM') {
         area = 'CDA'; sector = 'TLM';
@@ -1012,8 +1021,16 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         const v = parseInt(r[m], 10) || 0;
         pedidas[area][sector][puesto][m] = (pedidas[area][sector][puesto][m] || 0) + v;
       });
+      const comentario = norm(r['Comentario']);
+      const mm = comentario.match(MOV_INTERNO_RE_JS);
+      if (mm) {
+        const n = parseInt(mm[1], 10) || 0;
+        movinterno[area] = movinterno[area] || {};
+        movinterno[area][sector] = movinterno[area][sector] || {};
+        movinterno[area][sector][puesto] = (movinterno[area][sector][puesto] || 0) + n;
+      }
     });
-    return pedidas;
+    return { pedidas, movinterno };
   }
 
   function detectSheetKind(headerRow) {
@@ -1047,7 +1064,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
         results.candidatos = (results.candidatos || []).concat(parseCandidatosRows(rows));
         results.foundCandidatos = true;
       } else if (kind === 'resumen') {
-        const ped = parseResumenRows(rows);
+        const { pedidas: ped, movinterno: mov } = parseResumenRows(rows);
         results.pedidas = results.pedidas || {};
         Object.entries(ped).forEach(([area, secs]) => {
           results.pedidas[area] = results.pedidas[area] || {};
@@ -1058,6 +1075,16 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
               Object.entries(mesObj).forEach(([m, n]) => {
                 results.pedidas[area][sec][p][m] = (results.pedidas[area][sec][p][m] || 0) + n;
               });
+            });
+          });
+        });
+        results.movinterno = results.movinterno || {};
+        Object.entries(mov).forEach(([area, secs]) => {
+          results.movinterno[area] = results.movinterno[area] || {};
+          Object.entries(secs).forEach(([sec, puestos]) => {
+            results.movinterno[area][sec] = results.movinterno[area][sec] || {};
+            Object.entries(puestos).forEach(([p, n]) => {
+              results.movinterno[area][sec][p] = (results.movinterno[area][sec][p] || 0) + n;
             });
           });
         });
@@ -1090,6 +1117,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   restoreBtn.addEventListener('click', () => {
     CANDIDATOS = JSON.parse(JSON.stringify(BASE_CANDIDATOS));
     PEDIDAS_MES = JSON.parse(JSON.stringify(BASE_PEDIDAS_MES));
+    PEDIDAS_MOVINTERNO = JSON.parse(JSON.stringify(BASE_PEDIDAS_MOVINTERNO));
     lastUpdateNote = null;
     areaActivo = 'LT2E';
     sectorActivo = 'Todos';
@@ -1129,8 +1157,9 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     }
     if (results.foundResumen) {
       PEDIDAS_MES = results.pedidas;
+      PEDIDAS_MOVINTERNO = results.movinterno || {};
       const totalPos = Object.values(results.pedidas).reduce((s, secs) => s + Object.values(secs).reduce((s2, puestos) => s2 + sumPuestos(puestos), 0), 0);
-      partes.push(`${totalPos} posiciones pedidas (suma de todos los meses)`);
+      partes.push(`${totalPos} posiciones pedidas (suma de todos los meses, solo Encuadre PP)`);
     }
 
     const now = new Date();
