@@ -37,7 +37,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     --cat-5:#db2777; --cat-6:#2563eb; --cat-7:#ea580c; --cat-8:#dc2626;
     --mono-font:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
     --hud-bg-image:none; --card-blur:0px; --card-glow:none; --title-glow:none;
-    --hud-corner:transparent; --active-pulse:none; --scrollbar-thumb:#c3d2da;
+    --hud-corner:transparent; --active-pulse:none; --scrollbar-thumb:#c3d2da; --boot-opacity:0;
   }
   [data-theme="dark"]{
     color-scheme: dark;
@@ -55,6 +55,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     --card-blur:12px; --card-glow:0 0 0 1px rgba(34,211,238,0.06), 0 8px 32px rgba(0,0,0,0.45), 0 0 24px rgba(34,211,238,0.05);
     --title-glow:0 0 14px rgba(34,211,238,0.55); --hud-corner:rgba(34,211,238,0.85);
     --active-pulse:pulseGlow 2.4s ease-in-out infinite; --scrollbar-thumb:rgba(34,211,238,0.35);
+    --boot-opacity:1;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -72,6 +73,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       --card-blur:12px; --card-glow:0 0 0 1px rgba(34,211,238,0.06), 0 8px 32px rgba(0,0,0,0.45), 0 0 24px rgba(34,211,238,0.05);
       --title-glow:0 0 14px rgba(34,211,238,0.55); --hud-corner:rgba(34,211,238,0.85);
       --active-pulse:pulseGlow 2.4s ease-in-out infinite; --scrollbar-thumb:rgba(34,211,238,0.35);
+      --boot-opacity:1;
     }
   }
   *{box-sizing:border-box;}
@@ -99,6 +101,31 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     50%{box-shadow:0 0 0 2px var(--brand-green) inset, 0 0 22px rgba(34,211,238,0.55);}
   }
   .kpi.active{animation:var(--active-pulse);}
+
+  /* ---- Efectos de transición "última tecnología": scan de arranque (solo dark), destello en
+     tortas al refrescar datos, y entradas escalonadas en KPIs/filas de tabla. ---- */
+  body::before{
+    content:''; position:fixed; top:0; left:0; right:0; height:2px; z-index:300; pointer-events:none;
+    background:linear-gradient(90deg, transparent, var(--brand-green), transparent);
+    opacity:var(--boot-opacity,0); animation:bootScan 1.6s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes bootScan{
+    0%{top:0;opacity:var(--boot-opacity,0);}
+    85%{opacity:var(--boot-opacity,0);}
+    100%{top:100%;opacity:0;}
+  }
+  @keyframes donutFlash{0%{filter:brightness(1.55) saturate(1.35);}100%{filter:brightness(1) saturate(1);}}
+  .donut-flash{animation:donutFlash .55s ease;}
+  @keyframes kpiIn{from{opacity:0;transform:translateY(6px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .kpi{animation:kpiIn .4s cubic-bezier(.2,.7,.3,1) both;}
+  @keyframes rowIn{from{opacity:0;transform:translateX(-4px);}to{opacity:1;transform:translateX(0);}}
+  #puestoBody tr, #resumenBody tr{animation:rowIn .3s ease both;}
+  .pill, .file-btn, .restore-btn, .theme-toggle, td.clickable-cell, .donut-legend-row{transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;}
+  @media (prefers-reduced-motion: reduce){
+    body::before{animation:none;display:none;}
+    .kpi, #puestoBody tr, #resumenBody tr, .kdr, .donut-flash{animation:none!important;}
+    .kpi.active{animation:none!important;}
+  }
   /* Lectura tipo "readout" numérico: tabular y monoespaciado en los valores de las tablas y KPIs. */
   .kpi .num, .donut-hole .n, .kdr-dias, .cmr-meta, .sub-stats b, .cell-modal-sub, .kpi-detail-note,
   #puestoBody td:not(.puesto-name), #puestoFoot td:not(:first-child),
@@ -549,6 +576,37 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   let lastOrigenTotal = 0;
   let lastLocItems = [];
   let lastLocTotal = 0;
+  // Valores "anteriores" recordados solo para animar el conteo (count-up) de números que se
+  // vuelven a pintar por completo en cada render() — así el número visualmente sube/baja desde
+  // el valor previo en vez de aparecer ya cambiado de golpe.
+  let animPrevKpi = {};
+  let animPrevSub = {};
+  // Anima un elemento de texto numérico desde su valor actual hacia `to`, con easing. Si el
+  // elemento no tiene un número previo válido, arranca desde 0 (da el efecto "boot" en la carga inicial).
+  function animateCountUp(el, to, duration) {
+    if (!el) return;
+    duration = duration || 550;
+    const from = parseInt((el.textContent || '').replace(/[^0-9-]/g, ''), 10);
+    const start = isNaN(from) ? 0 : from;
+    if (start === to) { el.textContent = to; return; }
+    const t0 = performance.now();
+    function step(t) {
+      const p = Math.min((t - t0) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(start + (to - start) * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = to;
+    }
+    requestAnimationFrame(step);
+  }
+  // Reinicia una animación CSS ya aplicada por clase (ej. el destello de las tortas al refrescar
+  // datos), forzando un reflow entre quitar y volver a poner la clase.
+  function restartAnim(el, cls) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
   // Localidades es un set abierto (no una lista fija como Procedencia), así que el color se
   // asigna cíclicamente sobre la paleta categórica en vez de un mapa fijo por nombre.
   function catColorByIndex(i) { return `var(--cat-${(i % 8) + 1})`; }
@@ -980,7 +1038,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     lastItemsVisibles = itemsVisibles;
 
     const kpiEl = document.getElementById('kpiGrid');
-    kpiEl.innerHTML = KPI_STAGES.map(s => {
+    kpiEl.innerHTML = KPI_STAGES.map((s, i) => {
       // Caso especial: candidatos que avanzaron a Examen Médico sin tener OK de RRLL cargado
       // todavía (se saltearon el paso por presión de los tiempos) — lo marcamos sin agregar
       // una columna nueva, con un aviso chico + tooltip con los nombres.
@@ -992,14 +1050,20 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
           warnHtml = `<div class="kpi-warn" title="Sin OK de RRLL: ${nombres.replace(/"/g,'&quot;')}">⚠ ${sinRrll.length} sin OK RRLL</div>`;
         }
       }
+      const target = countStage(itemsVisibles, s.match);
+      const start = animPrevKpi[s.label] != null ? animPrevKpi[s.label] : 0;
+      animPrevKpi[s.label] = target;
       return `
-      <div class="kpi${kpiExpandido === s.label ? ' active' : ''}" data-stage="${s.label.replace(/"/g,'&quot;')}">
-        <div class="num">${countStage(itemsVisibles, s.match)}</div>
+      <div class="kpi${kpiExpandido === s.label ? ' active' : ''}" data-stage="${s.label.replace(/"/g,'&quot;')}" data-target="${target}" style="animation-delay:${i*45}ms">
+        <div class="num">${start}</div>
         <div class="lbl">${s.label}</div>
         ${warnHtml}
       </div>
     `;
     }).join('');
+    kpiEl.querySelectorAll('.kpi').forEach(el => {
+      animateCountUp(el.querySelector('.num'), parseInt(el.dataset.target, 10) || 0);
+    });
 
     // El panel de detalle se recalcula siempre con el itemsVisibles actual (filtros/meses vigentes).
     renderKpiDetail(itemsVisibles);
@@ -1036,13 +1100,17 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       ? `<span class="prom-dias"><b>${promDiasPostulado}</b> días prom. de Postulado</span>` : '';
 
     document.getElementById('subStats').innerHTML = `
-      <span><b>${totalCandidatos}</b> candidatos</span>
-      <span><b>${ingresados}</b> ingresados</span>
-      <span><b>${cancelados}</b> cancelados</span>
-      <span><b>${pedidasSel}</b> posiciones pedidas (meses seleccionados)</span>
+      <span><b class="cnt-num" data-target="${totalCandidatos}">${animPrevSub.total != null ? animPrevSub.total : totalCandidatos}</b> candidatos</span>
+      <span><b class="cnt-num" data-target="${ingresados}">${animPrevSub.ingresados != null ? animPrevSub.ingresados : ingresados}</b> ingresados</span>
+      <span><b class="cnt-num" data-target="${cancelados}">${animPrevSub.cancelados != null ? animPrevSub.cancelados : cancelados}</b> cancelados</span>
+      <span><b class="cnt-num" data-target="${pedidasSel}">${animPrevSub.pedidas != null ? animPrevSub.pedidas : pedidasSel}</b> posiciones pedidas (meses seleccionados)</span>
       <span><b>${pctGlobal}</b> % avance</span>
       ${promDiasHtml}
     `;
+    animPrevSub = { total: totalCandidatos, ingresados, cancelados, pedidas: pedidasSel };
+    document.querySelectorAll('#subStats b.cnt-num').forEach(el => {
+      animateCountUp(el, parseInt(el.dataset.target, 10) || 0);
+    });
 
     const suffixParts = [];
     if (procedenciaActivo !== 'Todas') suffixParts.push(`Procedencia: ${procedenciaActivo}`);
@@ -1058,7 +1126,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     // (porPuesto / filas / itemsVisibles ya se calcularon más arriba, antes de los KPIs)
     const body = document.getElementById('puestoBody');
     const escAttr = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    body.innerHTML = filas.map(f => {
+    body.innerHTML = filas.map((f, fi) => {
       const vals = KPI_STAGES.map(s => countStage(f.items, s.match));
       const cancel = countStage(f.items, e => e === 'Cancelado');
       const objetivo = pedidasPuestoDe(areaActivo, f.sector, f.puesto);
@@ -1067,7 +1135,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       // Cada celda con valor > 0 es clickeable: abre un modal con los nombres de esos candidatos
       // puntuales (puesto + etapa), para no tener que ir a buscar quién compone cada número.
       const cellHtml = (v, stageLabel) => `<td class="${v===0?'zero':'clickable-cell'}"${v===0?'':` data-sector="${escAttr(f.sector)}" data-puesto="${escAttr(f.puesto)}" data-stage="${escAttr(stageLabel)}"`}>${v || '—'}</td>`;
-      return `<tr>
+      return `<tr style="animation-delay:${Math.min(fi,14)*22}ms">
         <td class="puesto-name">${sectorTag}<span class="puesto-txt">${f.puesto}</span></td>
         ${vals.map((v,i) => cellHtml(v, KPI_STAGES[i].label)).join('')}
         ${cellHtml(cancel, 'Cancelado')}
@@ -1092,7 +1160,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
 
     // ---- Card A: Resumen de cobertura ----
     const resumenBody = document.getElementById('resumenBody');
-    resumenBody.innerHTML = filas.map(f => {
+    resumenBody.innerHTML = filas.map((f, fi) => {
       const necesidad = pedidasPuestoDe(areaActivo, f.sector, f.puesto);
       const enProceso = f.items.filter(c => c.etapa !== 'Cancelado').length;
       const movIntVal = movInternoColumnaDe(areaActivo, f.sector, f.puesto);
@@ -1111,7 +1179,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       const overClass = (avancePct !== null && avancePct > 100) ? ' over' : '';
       const sectorTag = sectorActivo === 'Todos'
         ? `<span class="sec-tag" style="background:${SECTOR_COLOR[f.sector]||'#888'}">${f.sector}</span>` : '';
-      return `<tr>
+      return `<tr style="animation-delay:${Math.min(fi,14)*22}ms">
         <td class="puesto-name">${sectorTag}<span class="puesto-txt">${f.puesto}</span></td>
         <td class="objetivo-col ${necesidad===0?'zero':''}">${necesidad || '—'}</td>
         <td class="${enProceso===0?'zero':''}">${enProceso || '—'}</td>
@@ -1148,7 +1216,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const origenItemsRaw = Object.entries(origenCounts).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
     document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${movIntSel?` + ${movIntSel} mov. interno`:''}${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}${procedenciaActivo!=='Todas'?' · click de nuevo en "Todas" (arriba) para quitar el filtro':''}`;
     const origenTotal = origenItemsRaw.reduce((s,i) => s + i.value, 0);
-    document.getElementById('origenDonutTotal').textContent = origenTotal;
+    animateCountUp(document.getElementById('origenDonutTotal'), origenTotal);
     document.getElementById('origenDonutLbl').textContent = movIntSel ? 'cand. + mov.int.' : 'candidatos';
     const donutEl = document.getElementById('origenDonut');
     // "Mov. Interno" no es un valor real de Procedencia (no hay pill para filtrar por él), así
@@ -1168,6 +1236,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       const stops = origenItems.map(it => `${procColor(it.label)} ${it.from}% ${it.to}%`).join(', ');
       donutEl.style.background = `conic-gradient(${stops})`;
     }
+    restartAnim(donutEl, 'donut-flash');
     donutEl.classList.toggle('is-filtered', procedenciaActivo !== 'Todas');
     document.getElementById('origenLegend').innerHTML = origenItems.length ? origenItems.map(it => `
       <div class="donut-legend-row${it.clickable?' clickable':''}${procedenciaActivo===it.label?' active':''}"${it.clickable?` data-proc="${it.label.replace(/"/g,'&quot;')}"`:''}>
@@ -1188,7 +1257,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       .map(([key,value]) => ({ key, label: labelFor(key, locLabelMap), value }));
     document.getElementById('locDonutSub').textContent = `${totalCandidatos} candidatos${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}${localidadActiva!=='Todas'?' · click de nuevo en el mismo gajo para quitar el filtro':''}`;
     const locTotal = locItemsRaw.reduce((s,i) => s + i.value, 0);
-    document.getElementById('locDonutTotal').textContent = locTotal;
+    animateCountUp(document.getElementById('locDonutTotal'), locTotal);
     document.getElementById('locDonutLbl').textContent = 'candidatos';
     const locDonutEl = document.getElementById('locDonut');
     let locAcc = 0;
@@ -1206,6 +1275,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       const locStops = locItems.map(it => `${it.color} ${it.from}% ${it.to}%`).join(', ');
       locDonutEl.style.background = `conic-gradient(${locStops})`;
     }
+    restartAnim(locDonutEl, 'donut-flash');
     locDonutEl.classList.toggle('is-filtered', localidadActiva !== 'Todas');
     document.getElementById('locLegend').innerHTML = locItems.length ? locItems.map(it => `
       <div class="donut-legend-row clickable${localidadActiva===it.key?' active':''}" data-loc="${it.key.replace(/"/g,'&quot;')}">
