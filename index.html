@@ -131,6 +131,7 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   .kpi-detail.open{max-height:900px;opacity:1;margin-top:12px;overflow-y:auto;}
   .kpi-detail-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface-2);}
   .kpi-detail-head h4{margin:0;font-size:13.5px;font-weight:700;}
+  .kpi-detail-note{font-size:11px;color:var(--text-muted);margin-top:2px;}
   .kpi-detail-close{border:none;background:transparent;color:var(--text-muted);font-size:16px;cursor:pointer;line-height:1;padding:4px 6px;border-radius:6px;}
   .kpi-detail-close:hover{background:var(--row-alt);color:var(--text-primary);}
   .kpi-detail-list{padding:6px 16px 14px;}
@@ -147,6 +148,25 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     .kdr{grid-template-columns:1fr;gap:3px;padding:10px 0;}
     .kdr-bar-wrap{display:none;}
   }
+
+  /* ---- Celdas clickeables de "Detalle por etapa" + modal con nombres ---- */
+  td.clickable-cell{cursor:pointer;border-radius:6px;transition:background .12s ease,color .12s ease;}
+  td.clickable-cell:hover{background:var(--row-alt);color:var(--brand-green);}
+  .cell-modal-overlay{position:fixed;inset:0;background:rgba(11,11,11,0.45);align-items:center;justify-content:center;z-index:80;padding:20px;opacity:0;transition:opacity .18s ease;}
+  .cell-modal-overlay:not([hidden]){display:flex;}
+  .cell-modal-overlay.open{opacity:1;}
+  .cell-modal{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;max-width:480px;width:100%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);transform:translateY(8px) scale(.98);transition:transform .18s ease;}
+  .cell-modal-overlay.open .cell-modal{transform:translateY(0) scale(1);}
+  .cell-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);}
+  .cell-modal-head h4{margin:0;font-size:14px;font-weight:700;}
+  .cell-modal-sub{font-size:11.5px;color:var(--text-muted);margin-top:3px;}
+  .cell-modal-close{border:none;background:transparent;color:var(--text-muted);font-size:17px;cursor:pointer;line-height:1;padding:4px 6px;border-radius:6px;flex:0 0 auto;}
+  .cell-modal-close:hover{background:var(--row-alt);color:var(--text-primary);}
+  .cell-modal-list{overflow-y:auto;padding:6px 18px 16px;}
+  .cmr{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--grid-line);font-size:12.5px;}
+  .cmr:last-child{border-bottom:none;}
+  .cmr-name{font-weight:600;color:var(--text-primary);}
+  .cmr-meta{color:var(--text-muted);font-size:11.5px;text-align:right;flex:0 0 auto;}
 
   .sub-stats{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;font-size:12.5px;color:var(--text-secondary);margin:8px 0 24px;}
   .sub-stats .prom-dias{color:var(--text-muted);}
@@ -207,7 +227,13 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   .donut-hole .n{font-size:19px;font-weight:800;color:var(--text-primary);line-height:1.1;}
   .donut-hole .lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
   .donut-legend{flex:1 1 180px;min-width:150px;display:flex;flex-direction:column;gap:7px;}
-  .donut-legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);}
+  .donut-legend-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);border-radius:6px;padding:2px 4px;margin:0 -4px;}
+  .donut-legend-row.clickable{cursor:pointer;transition:background .12s ease;}
+  .donut-legend-row.clickable:hover{background:var(--row-alt);}
+  .donut-legend-row.active{background:var(--row-alt);}
+  .donut-legend-row.active .nm{font-weight:700;color:var(--text-primary);}
+  .donut{cursor:pointer;transition:filter .12s ease;}
+  .donut.is-filtered{filter:saturate(1.15);}
   .donut-legend-row .sw{flex:0 0 auto;width:10px;height:10px;border-radius:3px;}
   .donut-legend-row .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .donut-legend-row .pct{flex:0 0 auto;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums;}
@@ -299,12 +325,28 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       <div class="kpi-grid" id="kpiGrid"></div>
       <div class="kpi-detail" id="kpiDetail" hidden>
         <div class="kpi-detail-head">
-          <h4 id="kpiDetailTitle"></h4>
+          <div>
+            <h4 id="kpiDetailTitle"></h4>
+            <div class="kpi-detail-note" id="kpiDetailNote"></div>
+          </div>
           <button type="button" class="kpi-detail-close" id="kpiDetailClose" aria-label="Cerrar">✕</button>
         </div>
         <div class="kpi-detail-list" id="kpiDetailList"></div>
       </div>
       <div class="sub-stats" id="subStats"></div>
+
+      <div class="cell-modal-overlay" id="cellModalOverlay" hidden>
+        <div class="cell-modal" role="dialog" aria-modal="true">
+          <div class="cell-modal-head">
+            <div>
+              <h4 id="cellModalTitle"></h4>
+              <div class="cell-modal-sub" id="cellModalSub"></div>
+            </div>
+            <button type="button" class="cell-modal-close" id="cellModalClose" aria-label="Cerrar">✕</button>
+          </div>
+          <div class="cell-modal-list" id="cellModalList"></div>
+        </div>
+      </div>
 
       <div class="card">
         <h3 id="resumenTitle">Resumen de cobertura</h3>
@@ -365,6 +407,15 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
           <h3>Motivos de baja</h3>
           <div class="card-sub" id="motivoSub"></div>
           <div id="motivoBars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Localidades de los candidatos</h3>
+        <div class="card-sub" id="locDonutSub"></div>
+        <div class="donut-wrap">
+          <div class="donut" id="locDonut"><div class="donut-hole"><div class="n" id="locDonutTotal">0</div><div class="lbl" id="locDonutLbl">candidatos</div></div></div>
+          <div class="donut-legend" id="locLegend"></div>
         </div>
       </div>
     </div>
@@ -436,7 +487,27 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const b = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
     return Math.round((b - a) / 86400000);
   }
+  // Diferencia en días entre dos fechas del candidato (p.ej. EPO → Aptitud Recibida), para medir
+  // cuánto demoró un trámite puntual en vez de cuánto lleva esperando hasta hoy.
+  function diasEntre(fechaIniStr, fechaFinStr) {
+    const ini = parseFechaDDMMYYYY(fechaIniStr);
+    const fin = parseFechaDDMMYYYY(fechaFinStr);
+    if (!ini || !fin) return null;
+    return Math.round((fin - ini) / 86400000);
+  }
   let kpiExpandido = null;
+  // Última referencia de filas/candidatos visibles calculada por render(), para que los popups
+  // de detalle (celdas de la tabla, torta de Origen) puedan recalcular su contenido al clickear
+  // sin tener que rehacer el filtrado — igual criterio que usa el resto del tablero.
+  let lastFilas = [];
+  let lastItemsVisibles = [];
+  let lastOrigenItems = [];
+  let lastOrigenTotal = 0;
+  let lastLocItems = [];
+  let lastLocTotal = 0;
+  // Localidades es un set abierto (no una lista fija como Procedencia), así que el color se
+  // asigna cíclicamente sobre la paleta categórica en vez de un mapa fijo por nombre.
+  function catColorByIndex(i) { return `var(--cat-${(i % 8) + 1})`; }
 
   const PROC_MAP = {
     'Linea': 'Línea', 'Línea': 'Línea', 'Sindicato': 'Sindicato', 'Consultora': 'Consultora',
@@ -746,12 +817,23 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const stage = KPI_STAGES.find(s => s.label === kpiExpandido);
     if (!stage) { kpiExpandido = null; panel.hidden = true; panel.classList.remove('open'); return; }
     const campo = STAGE_DATE_FIELD[stage.label];
+    // Caso especial "Aptitud Recibida": en vez de días esperando desde hoy, mostramos cuánto
+    // demoró en llegar el resultado del examen (EPO → Aptitud Recibida) — es el dato que sirve
+    // para medir tiempos de la clínica/prestador, no cuánto lleva "parado" el candidato.
+    const esTurnaround = stage.label === 'Aptitud Recibida';
     const candidatos = itemsVisibles
       .filter(c => stage.match(c.etapa))
-      .map(c => ({ ...c, _fecha: c[campo], _dias: diasDesde(c[campo]) }))
+      .map(c => ({
+        ...c,
+        _fecha: c[campo],
+        _dias: esTurnaround ? diasEntre(c.fechaEPO, c.fechaAptitud) : diasDesde(c[campo]),
+      }))
       .sort((a,b) => (b._dias ?? -1) - (a._dias ?? -1));
 
     document.getElementById('kpiDetailTitle').textContent = `${stage.label} — ${candidatos.length} candidato${candidatos.length === 1 ? '' : 's'}`;
+    document.getElementById('kpiDetailNote').textContent = esTurnaround
+      ? 'Días = demora del resultado (desde EPO hasta Aptitud Recibida), no días de espera'
+      : '';
 
     const maxDias = candidatos.reduce((m,c) => Math.max(m, c._dias ?? 0), 1);
     document.getElementById('kpiDetailList').innerHTML = candidatos.map(c => {
@@ -850,6 +932,8 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     // Candidatos que efectivamente se ven reflejados en algún puesto visible — es el set que
     // usamos para KPIs, Procedencia, Motivos de baja y los totales de ambas tablas.
     const itemsVisibles = filas.flatMap(f => f.items);
+    lastFilas = filas;
+    lastItemsVisibles = itemsVisibles;
 
     const kpiEl = document.getElementById('kpiGrid');
     kpiEl.innerHTML = KPI_STAGES.map(s => {
@@ -929,17 +1013,20 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     // ---- Card B: Detalle por etapa ----
     // (porPuesto / filas / itemsVisibles ya se calcularon más arriba, antes de los KPIs)
     const body = document.getElementById('puestoBody');
+    const escAttr = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     body.innerHTML = filas.map(f => {
       const vals = KPI_STAGES.map(s => countStage(f.items, s.match));
       const cancel = countStage(f.items, e => e === 'Cancelado');
       const objetivo = pedidasPuestoDe(areaActivo, f.sector, f.puesto);
       const sectorTag = sectorActivo === 'Todos'
         ? `<span class="sec-tag" style="background:${SECTOR_COLOR[f.sector]||'#888'}">${f.sector}</span>` : '';
-      const cellHtml = v => `<td class="${v===0?'zero':''}">${v || '—'}</td>`;
+      // Cada celda con valor > 0 es clickeable: abre un modal con los nombres de esos candidatos
+      // puntuales (puesto + etapa), para no tener que ir a buscar quién compone cada número.
+      const cellHtml = (v, stageLabel) => `<td class="${v===0?'zero':'clickable-cell'}"${v===0?'':` data-sector="${escAttr(f.sector)}" data-puesto="${escAttr(f.puesto)}" data-stage="${escAttr(stageLabel)}"`}>${v || '—'}</td>`;
       return `<tr>
         <td class="puesto-name">${sectorTag}<span class="puesto-txt">${f.puesto}</span></td>
-        ${vals.map(cellHtml).join('')}
-        ${cellHtml(cancel)}
+        ${vals.map((v,i) => cellHtml(v, KPI_STAGES[i].label)).join('')}
+        ${cellHtml(cancel, 'Cancelado')}
         <td class="objetivo-col ${objetivo===0?'zero':''}">${objetivo || '—'}</td>
       </tr>`;
     }).join('');
@@ -951,10 +1038,11 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
     const totVals = KPI_STAGES.map(s => countStage(itemsVisibles, s.match));
     const totCancel = countStage(itemsVisibles, e => e === 'Cancelado');
     const totObjetivo = filas.reduce((s,f) => s + pedidasPuestoDe(areaActivo, f.sector, f.puesto), 0);
+    const totCellHtml = (v, stageLabel) => `<td class="${v===0?'zero':'clickable-cell'}"${v===0?'':` data-sector="__total__" data-puesto="__total__" data-stage="${escAttr(stageLabel)}"`}>${v || '—'}</td>`;
     foot.innerHTML = `<tr>
       <td>Total</td>
-      ${totVals.map(v => `<td>${v}</td>`).join('')}
-      <td>${totCancel}</td>
+      ${totVals.map((v,i) => totCellHtml(v, KPI_STAGES[i].label)).join('')}
+      ${totCellHtml(totCancel, 'Cancelado')}
       <td>${totObjetivo || '—'}</td>
     </tr>`;
 
@@ -1013,29 +1101,73 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
       origenCounts[key] = (origenCounts[key] || 0) + 1;
     });
     if (movIntSel > 0) origenCounts['Mov. Interno'] = movIntSel;
-    const origenItems = Object.entries(origenCounts).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
-    document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${movIntSel?` + ${movIntSel} mov. interno`:''}${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}`;
-    const origenTotal = origenItems.reduce((s,i) => s + i.value, 0);
+    const origenItemsRaw = Object.entries(origenCounts).sort((a,b) => b[1]-a[1]).map(([label,value]) => ({label,value}));
+    document.getElementById('origenSub').textContent = `${totalCandidatos} candidatos${movIntSel?` + ${movIntSel} mov. interno`:''}${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}${procedenciaActivo!=='Todas'?' · click de nuevo en "Todas" (arriba) para quitar el filtro':''}`;
+    const origenTotal = origenItemsRaw.reduce((s,i) => s + i.value, 0);
     document.getElementById('origenDonutTotal').textContent = origenTotal;
     document.getElementById('origenDonutLbl').textContent = movIntSel ? 'cand. + mov.int.' : 'candidatos';
     const donutEl = document.getElementById('origenDonut');
+    // "Mov. Interno" no es un valor real de Procedencia (no hay pill para filtrar por él), así
+    // que ese gajo puntual queda informativo, sin click.
+    let acc = 0;
+    const origenItems = origenItemsRaw.map(it => {
+      const from = acc / (origenTotal || 1) * 100;
+      acc += it.value;
+      const to = acc / (origenTotal || 1) * 100;
+      return { ...it, from, to, clickable: it.label !== 'Mov. Interno' };
+    });
+    lastOrigenItems = origenItems;
+    lastOrigenTotal = origenTotal;
     if (!origenTotal) {
       donutEl.style.background = 'var(--grid-line)';
     } else {
-      let acc = 0;
-      const stops = origenItems.map(it => {
-        const from = acc / origenTotal * 100;
-        acc += it.value;
-        const to = acc / origenTotal * 100;
-        return `${procColor(it.label)} ${from}% ${to}%`;
-      }).join(', ');
+      const stops = origenItems.map(it => `${procColor(it.label)} ${it.from}% ${it.to}%`).join(', ');
       donutEl.style.background = `conic-gradient(${stops})`;
     }
+    donutEl.classList.toggle('is-filtered', procedenciaActivo !== 'Todas');
     document.getElementById('origenLegend').innerHTML = origenItems.length ? origenItems.map(it => `
-      <div class="donut-legend-row">
+      <div class="donut-legend-row${it.clickable?' clickable':''}${procedenciaActivo===it.label?' active':''}"${it.clickable?` data-proc="${it.label.replace(/"/g,'&quot;')}"`:''}>
         <span class="sw" style="background:${procColor(it.label)}"></span>
         <span class="nm">${it.label}</span>
         <span class="pct">${(it.value / origenTotal * 100).toFixed(1)}%</span>
+        <span class="cnt">${it.value}</span>
+      </div>`).join('') : '<div class="empty-note">Sin candidatos en este filtro.</div>';
+
+    // ---- Localidades de los candidatos (misma lógica que Origen: torta + leyenda clickeables) ----
+    const locCounts = {};
+    itemsVisibles.forEach(c => {
+      const key = locKeyOf(c);
+      locCounts[key] = (locCounts[key] || 0) + 1;
+    });
+    const locItemsRaw = Object.entries(locCounts)
+      .sort((a,b) => b[1]-a[1])
+      .map(([key,value]) => ({ key, label: labelFor(key, locLabelMap), value }));
+    document.getElementById('locDonutSub').textContent = `${totalCandidatos} candidatos${sectorActivo==='Todos'?'':' — '+sectorActivo}${procSuffix}${localidadActiva!=='Todas'?' · click de nuevo en el mismo gajo para quitar el filtro':''}`;
+    const locTotal = locItemsRaw.reduce((s,i) => s + i.value, 0);
+    document.getElementById('locDonutTotal').textContent = locTotal;
+    document.getElementById('locDonutLbl').textContent = 'candidatos';
+    const locDonutEl = document.getElementById('locDonut');
+    let locAcc = 0;
+    const locItems = locItemsRaw.map((it, i) => {
+      const from = locAcc / (locTotal || 1) * 100;
+      locAcc += it.value;
+      const to = locAcc / (locTotal || 1) * 100;
+      return { ...it, from, to, color: catColorByIndex(i) };
+    });
+    lastLocItems = locItems;
+    lastLocTotal = locTotal;
+    if (!locTotal) {
+      locDonutEl.style.background = 'var(--grid-line)';
+    } else {
+      const locStops = locItems.map(it => `${it.color} ${it.from}% ${it.to}%`).join(', ');
+      locDonutEl.style.background = `conic-gradient(${locStops})`;
+    }
+    locDonutEl.classList.toggle('is-filtered', localidadActiva !== 'Todas');
+    document.getElementById('locLegend').innerHTML = locItems.length ? locItems.map(it => `
+      <div class="donut-legend-row clickable${localidadActiva===it.key?' active':''}" data-loc="${it.key.replace(/"/g,'&quot;')}">
+        <span class="sw" style="background:${it.color}"></span>
+        <span class="nm">${it.label}</span>
+        <span class="pct">${(it.value / locTotal * 100).toFixed(1)}%</span>
         <span class="cnt">${it.value}</span>
       </div>`).join('') : '<div class="empty-note">Sin candidatos en este filtro.</div>';
 
@@ -1090,6 +1222,105 @@ if(xr(e,"index.xml"))throw new Error("Unsupported NUMBERS 09 file");throw new Er
   document.getElementById('kpiDetailClose').addEventListener('click', () => {
     kpiExpandido = null;
     render();
+  });
+
+  // ---- Modal de nombres al clickear una celda de "Detalle por etapa" ----
+  const cellModalOverlay = document.getElementById('cellModalOverlay');
+  function showCellModal(sector, puesto, stageLabel) {
+    let items;
+    let puestoLabel;
+    if (sector === '__total__' && puesto === '__total__') {
+      items = lastItemsVisibles;
+      puestoLabel = 'todos los puestos visibles';
+    } else {
+      const f = lastFilas.find(x => x.sector === sector && x.puesto === puesto);
+      items = f ? f.items : [];
+      puestoLabel = puesto;
+    }
+    const matched = stageLabel === 'Cancelado'
+      ? items.filter(c => c.etapa === 'Cancelado')
+      : items.filter(c => {
+          const stage = KPI_STAGES.find(s => s.label === stageLabel);
+          return stage && stage.match(c.etapa);
+        });
+    const fechaCampo = STAGE_DATE_FIELD[stageLabel];
+    const sorted = matched.slice().sort((a,b) => (a.nombre||'').localeCompare(b.nombre||'', 'es'));
+    document.getElementById('cellModalTitle').textContent = `${stageLabel} — ${sorted.length} candidato${sorted.length===1?'':'s'}`;
+    document.getElementById('cellModalSub').textContent = `Puesto: ${puestoLabel}`;
+    document.getElementById('cellModalList').innerHTML = sorted.map(c => {
+      let meta = '';
+      if (stageLabel === 'Cancelado') meta = c.motivo || 'Sin motivo registrado';
+      else if (fechaCampo && c[fechaCampo]) meta = c[fechaCampo];
+      else if (sector === '__total__') meta = c.puesto;
+      return `<div class="cmr"><span class="cmr-name">${c.nombre}</span><span class="cmr-meta">${meta}</span></div>`;
+    }).join('') || '<div class="cmr"><span class="cmr-name">Sin candidatos.</span></div>';
+    cellModalOverlay.hidden = false;
+    requestAnimationFrame(() => cellModalOverlay.classList.add('open'));
+  }
+  function hideCellModal() {
+    cellModalOverlay.classList.remove('open');
+    setTimeout(() => { cellModalOverlay.hidden = true; }, 180);
+  }
+  document.addEventListener('click', (ev) => {
+    const cell = ev.target.closest('td.clickable-cell');
+    if (cell) {
+      showCellModal(cell.dataset.sector, cell.dataset.puesto, cell.dataset.stage);
+      return;
+    }
+  });
+  document.getElementById('cellModalClose').addEventListener('click', hideCellModal);
+  cellModalOverlay.addEventListener('click', (ev) => { if (ev.target === cellModalOverlay) hideCellModal(); });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && !cellModalOverlay.hidden) hideCellModal();
+  });
+
+  // ---- Tortas de "Origen" y "Localidades" también funcionan como filtro (clickeable = toggle:
+  // clickear el mismo gajo/renglón activo de nuevo lo deshace y vuelve a "Todas") ----
+  function aplicarFiltroProcedencia(label) {
+    procedenciaActivo = (procedenciaActivo === label) ? 'Todas' : label;
+    provinciaActivo = 'Todas'; localidadActiva = 'Todas';
+    render();
+  }
+  function aplicarFiltroLocalidad(key) {
+    localidadActiva = (localidadActiva === key) ? 'Todas' : key;
+    render();
+  }
+  // Detecta sobre qué gajo cayó un click dentro de una torta armada con conic-gradient: calcula
+  // el ángulo respecto al centro (misma convención que conic-gradient: 0% arriba, sentido horario)
+  // e ignora clicks fuera del anillo o dentro del hueco central.
+  function donutWedgeHit(ev, items) {
+    const rect = ev.currentTarget.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = ev.clientX - cx;
+    const dy = ev.clientY - cy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const radius = rect.width / 2;
+    if (dist > radius || dist < radius * 0.697) return null;
+    let angleDeg = Math.atan2(dx, -dy) * 180 / Math.PI;
+    if (angleDeg < 0) angleDeg += 360;
+    const pct = angleDeg / 360 * 100;
+    return items.find(it => pct >= it.from && pct < it.to) || null;
+  }
+  document.getElementById('origenLegend').addEventListener('click', (ev) => {
+    const row = ev.target.closest('.donut-legend-row[data-proc]');
+    if (!row) return;
+    aplicarFiltroProcedencia(row.dataset.proc);
+  });
+  document.getElementById('origenDonut').addEventListener('click', (ev) => {
+    if (!lastOrigenTotal || !lastOrigenItems.length) return;
+    const hit = donutWedgeHit(ev, lastOrigenItems);
+    if (hit && hit.clickable) aplicarFiltroProcedencia(hit.label);
+  });
+  document.getElementById('locLegend').addEventListener('click', (ev) => {
+    const row = ev.target.closest('.donut-legend-row[data-loc]');
+    if (!row) return;
+    aplicarFiltroLocalidad(row.dataset.loc);
+  });
+  document.getElementById('locDonut').addEventListener('click', (ev) => {
+    if (!lastLocTotal || !lastLocItems.length) return;
+    const hit = donutWedgeHit(ev, lastLocItems);
+    if (hit) aplicarFiltroLocalidad(hit.key);
   });
 
   render();
